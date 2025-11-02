@@ -21,6 +21,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.example.moodtunes.components.MoodTunesButtonField
 import com.example.moodtunes.components.MoodTunesTextField
 import com.example.moodtunes.ui.theme.MoodTunesTheme
 
@@ -60,6 +61,12 @@ fun Greeting(modifier: Modifier = Modifier) {
             placeholder = "Search Your moods",
             leadingIcon = Icons.Default.Search,
             modifier = Modifier.padding(horizontal = 16.dp)
+        )
+        MoodTunesButtonField(
+            text = "Search",
+            onClick = {},
+            backgroundColor = Color.Red,
+            contentColor = Color.White,
         )
     }
 }
