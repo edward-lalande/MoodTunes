@@ -1,9 +1,12 @@
 package com.example.moodtunes
 
+import MoodCard
+import Music
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -18,6 +21,9 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -47,12 +53,23 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun Greeting(modifier: Modifier = Modifier) {
     var searchText by remember { mutableStateOf("") }
-
     Column(
         modifier = modifier.fillMaxSize(),
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
+        MoodCard(
+          mood = Mood.Energetic,
+          time = "2:30 PM",
+          music = Music(
+            name = "Good 4 U",
+            artist = "Olivia Rodrigo",
+            releaseDate = "2021",
+          ),
+          modifier = modifier
+              .fillMaxWidth()
+              .padding(16.dp)
+        )
         MoodTunesTextField(
             text = searchText,
             onTextChange = { newText -> searchText = newText },
@@ -72,7 +89,7 @@ fun Greeting(modifier: Modifier = Modifier) {
 }
 @Preview(showBackground = true)
 @Composable
-fun GreetingPreview() {
+fun PreviewMoodCard() {
     MoodTunesTheme {
         Greeting()
     }
