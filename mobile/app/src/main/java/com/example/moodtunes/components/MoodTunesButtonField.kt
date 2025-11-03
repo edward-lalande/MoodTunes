@@ -2,6 +2,8 @@ package com.example.moodtunes.components
 
 import androidx.compose.material3.Button
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.layout.offset
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ButtonElevation
@@ -41,6 +43,7 @@ fun MoodTunesButtonField(
     ) {
         if (icon != null) {
             Icon(
+                modifier = Modifier.padding(end = 4.dp).offset(x = (-4).dp),
                 imageVector = icon,
                 contentDescription = null
             )
