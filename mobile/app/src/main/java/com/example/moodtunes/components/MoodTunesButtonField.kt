@@ -24,6 +24,8 @@ fun MoodTunesButtonField(
     modifier: Modifier = Modifier,
     backgroundColor: Color = Color.Blue,
     contentColor: Color = Color.White,
+    disabledContentColor: Color = Color.Gray,
+    disabledContainerColor: Color = Color.Black,
     shape: Shape = RoundedCornerShape(12.dp),
     enabled: Boolean = true,
     border: BorderStroke? = null,
@@ -36,7 +38,9 @@ fun MoodTunesButtonField(
         modifier = modifier,
         colors = ButtonDefaults.buttonColors(
             containerColor = backgroundColor,
-            contentColor = contentColor
+            contentColor = contentColor,
+            disabledContentColor = disabledContentColor,
+            disabledContainerColor = disabledContainerColor
         ),
         shape = shape,
         enabled = enabled,

@@ -13,11 +13,14 @@ fun MoodNavGraph(navController: NavHostController) {
         navController = navController,
         startDestination = "login"
     ) {
-        composable("select-mood") {
-            SelectMoodPages(navController = navController)
-        }
         composable("login") {
             LoginPage(navController = navController)
+        }
+        composable("sign-up") {
+            SignUpPage(navController = navController)
+        }
+        composable("select-mood") {
+            SelectMoodPages(navController = navController)
         }
         composable(
             "select-kind-of-music/{moodName}",

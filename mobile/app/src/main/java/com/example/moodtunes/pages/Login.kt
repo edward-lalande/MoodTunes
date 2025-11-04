@@ -50,7 +50,7 @@ fun LoginPage(navController: NavController) {
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
-            LoginHeader()
+            LoginSignUpHeader("Music that matches your mood")
 
             SpotifyButton()
 
@@ -75,15 +75,24 @@ fun LoginPage(navController: NavController) {
                 )
             }
 
-            SignInForm(navController)
+            SignInAndUpForm(
+                navController,
+                buttonText = "Sign in",
+                signUp = false
+            )
 
-            SignUpForm()
+            HasAnAccountForm(
+                textSentence = "Don't have an account?",
+                textClickable = "Sign Up",
+                redirect = "sign-up",
+                navController = navController
+            )
         }
     }
 }
 
 @Composable
-fun LoginHeader() {
+fun LoginSignUpHeader(subtitleText: String) {
     Card(
         shape = CircleShape,
         colors = CardDefaults.cardColors(
@@ -111,7 +120,7 @@ fun LoginHeader() {
     )
 
     Text(
-        text = "Music that matches your mood",
+        text = subtitleText,
         color = Color.Gray,
         fontSize = 20.sp,
         fontWeight = FontWeight.SemiBold,
@@ -156,9 +165,10 @@ fun SpotifyButton() {
 }
 
 @Composable
-fun SignInForm(navController: NavController) {
+fun SignInAndUpForm(navController: NavController, buttonText: String, signUp: Boolean) {
     var emailText by remember { mutableStateOf("") }
     var passwordText by remember { mutableStateOf("") }
+    var confirmPasswordText by remember { mutableStateOf("") }
 
     MoodTunesTextField(
         modifier = Modifier
@@ -186,37 +196,65 @@ fun SignInForm(navController: NavController) {
         textColor = Color.White
     )
 
+    if (signUp) {
+        var outlineConfirmField = Color.Red
+
+        if (confirmPasswordText == passwordText) {
+            outlineConfirmField = Color(0xFF5B21B6)
+        }
+
+        MoodTunesTextField(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(vertical = 8.dp, horizontal = 16.dp),
+            text = confirmPasswordText,
+            onTextChange = { newText -> confirmPasswordText = newText },
+            outlineColor = outlineConfirmField,
+            placeholder = "Confirm Password",
+            backgroundColor = Color(0xFF1A1A1A).copy(alpha = 0.1f),
+            fillColor = Color.Transparent,
+            textColor = Color.White
+        )
+    }
+
+    var isEnableButton = true
+    if (passwordText != confirmPasswordText && signUp) {
+        isEnableButton = false
+    }
+
     MoodTunesButtonField(
         onClick = {
             navController.navigate("select-mood")
         },
-        text = "Sign In",
+        text = buttonText,
         modifier = Modifier
             .fillMaxWidth()
             .padding(16.dp),
         backgroundColor = Color(0xFF5B21B6),
+        disabledContainerColor = Color(0x775B21B6),
         textStyle = TextStyle(
             fontWeight = FontWeight.Bold,
             fontSize = 18.sp
         ),
+        enabled = isEnableButton
     )
 }
 
 @Composable
-fun SignUpForm() {
+fun HasAnAccountForm(navController: NavController ,textSentence: String, textClickable: String, redirect: String) {
     Row {
         Text(
-            text = "Don't have an account?",
+            text = textSentence,
             color = Color.Gray,
             fontSize = 16.sp
         )
 
         Text(
-            text = "Sign up",
+            text = textClickable,
             color = Color.White,
             fontSize = 16.sp,
             modifier = Modifier
-                .clickable { }
+                .clickable { navController.navigate(redirect) }
                 .padding(horizontal = 8.dp)
         )
     }
