@@ -18,6 +18,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import com.example.moodtunes.components.BottomBar
 import com.example.moodtunes.components.MoodCard
 import com.example.moodtunes.components.MoodTunesTextField
 
@@ -43,125 +44,126 @@ fun SelectMoodPages(navController: NavController) {
     )
 
     val recentMoods = listOf(Mood.Happy, Mood.Calm, Mood.Energetic)
-
-    LazyColumn(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(Color.Black)
-            .padding(horizontal = 16.dp)
-    ) {
-        item {
-            Spacer(modifier = Modifier.height(24.dp))
-
-            Text(
-                text = "How are you feeling today?",
-                fontSize = 28.sp,
-                fontWeight = FontWeight.Bold,
-                color = Color.White,
-                textAlign = TextAlign.Center,
-                modifier = Modifier.fillMaxWidth()
-            )
-
-            Spacer(modifier = Modifier.height(8.dp))
-
-            Text(
-                text = "Select a mood to discover your perfect soundtrack",
-                fontSize = 14.sp,
-                color = Color.White.copy(alpha = 0.6f),
-                textAlign = TextAlign.Center,
-                modifier = Modifier.fillMaxWidth()
-            )
-
-            Spacer(modifier = Modifier.height(20.dp))
-
-            MoodTunesTextField(
-                text = searchText,
-                onTextChange = { searchText = it },
+    Scaffold (
+        bottomBar = { BottomBar(navController) },
+        content = { innerPadding ->
+            LazyColumn(
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .height(56.dp),
-                leadingIcon = Icons.Default.Search,
-                placeholder = "Search for a mood...",
-                textColor = Color.White,
-                placeholderColor = Color.White.copy(alpha = 0.4f),
-                outlineColor = Color.White.copy(alpha = 0.01f),
-                fillColor = Color.White.copy(alpha = 0.05f),
-                backgroundColor = Color.Transparent,
-                iconColor = Color.White.copy(alpha = 0.4f)
-            )
-
-            Spacer(modifier = Modifier.height(32.dp))
-
-            SectionHeader(icon = "🔥", title = "Popular Moods")
-
-            Spacer(modifier = Modifier.height(16.dp))
-        }
-        item {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(12.dp)
+                    .fillMaxSize()
+                    .background(Color.Black)
+                    .padding(innerPadding)
             ) {
-                popularMoods.forEach { mood ->
-                    MoodCard(
-                        mood = mood,
-                        modifier = Modifier.weight(1f),
-                        onClick = {
-                            navController.navigate("select-kind-of-music/${mood.name}")
-                        }
+                item {
+                    Spacer(modifier = Modifier.height(24.dp))
+
+                    Text(
+                        text = "How are you feeling today?",
+                        fontSize = 28.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = Color.White,
+                        textAlign = TextAlign.Center,
+                        modifier = Modifier.fillMaxWidth()
                     )
-                }
-            }
 
-            Spacer(modifier = Modifier.height(32.dp))
-        }
+                    Spacer(modifier = Modifier.height(8.dp))
 
-        item {
-            SectionHeader(icon = "🎭", title = "All Moods")
-            Spacer(modifier = Modifier.height(16.dp))
-        }
-
-        items(allMoods.chunked(2).size) { index ->
-            val moodPair = allMoods.chunked(2)[index]
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(12.dp)
-            ) {
-                moodPair.forEach { mood ->
-                    MoodCard(
-                        mood = mood,
-                        modifier = Modifier.weight(1f),
-                        onClick = {
-                            navController.navigate("select-kind-of-music/${mood.name}")
-                        }
+                    Text(
+                        text = "Select a mood to discover your perfect soundtrack",
+                        fontSize = 14.sp,
+                        color = Color.White.copy(alpha = 0.6f),
+                        textAlign = TextAlign.Center,
+                        modifier = Modifier.fillMaxWidth()
                     )
+
+                    Spacer(modifier = Modifier.height(20.dp))
+
+                    MoodTunesTextField(
+                        text = searchText,
+                        onTextChange = { searchText = it },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(56.dp),
+                        leadingIcon = Icons.Default.Search,
+                        placeholder = "Search for a mood...",
+                        textColor = Color.White,
+                        placeholderColor = Color.White.copy(alpha = 0.4f),
+                        outlineColor = Color.White.copy(alpha = 0.01f),
+                        fillColor = Color.White.copy(alpha = 0.05f),
+                        backgroundColor = Color.Transparent,
+                        iconColor = Color.White.copy(alpha = 0.4f)
+                    )
+
+                    Spacer(modifier = Modifier.height(32.dp))
+
+                    SectionHeader(icon = "🔥", title = "Popular Moods")
+
+                    Spacer(modifier = Modifier.height(16.dp))
                 }
-                if (moodPair.size == 1) {
-                    Spacer(modifier = Modifier.weight(1f))
+                item {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(12.dp)
+                    ) {
+                        popularMoods.forEach { mood ->
+                            MoodCard(
+                                mood = mood,
+                                modifier = Modifier.weight(1f),
+                                onClick = {
+                                    navController.navigate("select-kind-of-music/${mood.name}")
+                                }
+                            )
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.height(32.dp))
+                }
+
+                item {
+                    SectionHeader(icon = "🎭", title = "All Moods")
+                    Spacer(modifier = Modifier.height(16.dp))
+                }
+
+                items(allMoods.chunked(2).size) { index ->
+                    val moodPair = allMoods.chunked(2)[index]
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(12.dp)
+                    ) {
+                        moodPair.forEach { mood ->
+                            MoodCard(
+                                mood = mood,
+                                modifier = Modifier.weight(1f),
+                                onClick = {
+                                    navController.navigate("select-kind-of-music/${mood.name}")
+                                }
+                            )
+                        }
+                        if (moodPair.size == 1) {
+                            Spacer(modifier = Modifier.weight(1f))
+                        }
+                    }
+                    Spacer(modifier = Modifier.height(12.dp))
+                }
+                item {
+                    Spacer(modifier = Modifier.height(20.dp))
+                    SectionHeader(icon = "🕐", title = "Recently Used")
+
+                    Spacer(modifier = Modifier.height(16.dp))
+                }
+                item {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(12.dp)
+                    ) {
+                        recentMoods.forEach { mood ->
+                            RecentMoodPill(mood = mood)
+                        }
+                    }
+                    Spacer(modifier = Modifier.height(100.dp))
                 }
             }
-            Spacer(modifier = Modifier.height(12.dp))
         }
-
-        item {
-            Spacer(modifier = Modifier.height(20.dp))
-            SectionHeader(icon = "🕐", title = "Recently Used")
-
-            Spacer(modifier = Modifier.height(16.dp))
-        }
-
-        item {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(12.dp)
-            ) {
-                recentMoods.forEach { mood ->
-                    RecentMoodPill(mood = mood)
-                }
-            }
-
-            Spacer(modifier = Modifier.height(100.dp))
-        }
-    }
+    )
 }
 
 @Composable

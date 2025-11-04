@@ -13,11 +13,11 @@ fun MoodNavGraph(navController: NavHostController) {
         navController = navController,
         startDestination = "login"
     ) {
+        composable("select-mood") {
+            SelectMoodPages(navController = navController)
+        }
         composable("login") {
             LoginPage(navController = navController)
-        }
-        composable("selectMood") {
-            SelectMoodPages(navController = navController)
         }
         composable(
             "select-kind-of-music/{moodName}",
@@ -25,6 +25,16 @@ fun MoodNavGraph(navController: NavHostController) {
         ) { backStackEntry ->
             val moodName = backStackEntry.arguments?.getString("moodName") ?: ""
             SelectKindOfMusic(navController, moodName)
+        }
+        composable(
+            "history",
+        ) {
+            HistoryPage(navController)
+        }
+        composable(
+            "profile",
+        ) {
+            ProfilePage(navController)
         }
         composable(
             "results/{selectedOption}/{moodName}",
