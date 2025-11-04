@@ -188,7 +188,7 @@ fun SignInForm(navController: NavController) {
 
     MoodTunesButtonField(
         onClick = {
-            navController.navigate("selectMood")
+            navController.navigate("select-mood")
         },
         text = "Sign In",
         modifier = Modifier

@@ -1,4 +1,4 @@
-package com.example.moodtunes.navigation
+package com.example.moodtunes.pages
 
 import androidx.compose.runtime.Composable
 import androidx.navigation.NavHostController
@@ -6,12 +6,6 @@ import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
-import com.example.moodtunes.pages.HistoryPage
-import com.example.moodtunes.pages.LoginPage
-import com.example.moodtunes.pages.ProfilePage
-import com.example.moodtunes.pages.Result
-import com.example.moodtunes.pages.SelectKindOfMusic
-import com.example.moodtunes.pages.SelectMoodPages
 
 @Composable
 fun MoodNavGraph(navController: NavHostController) {
