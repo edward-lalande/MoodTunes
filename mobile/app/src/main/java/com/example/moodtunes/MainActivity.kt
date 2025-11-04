@@ -12,7 +12,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.navigation.compose.rememberNavController
-import com.example.moodtunes.navigation.MoodNavGraph
+import com.example.moodtunes.pages.MoodNavGraph
 import com.example.moodtunes.ui.theme.MoodTunesTheme
 
 class MainActivity : ComponentActivity() {
