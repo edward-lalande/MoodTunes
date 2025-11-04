@@ -8,7 +8,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -17,7 +17,6 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -40,7 +39,7 @@ data class ContentOption(
 fun ContentTypeSelector(selectedOption: String, onOptionSelected: (String) -> Unit) {
     val options = listOf(
         ContentOption("Album", "Discover full albums that match your mood", OptionIcon.Painter(painterResource(id = R.drawable.kind_of_music_album))),
-        ContentOption("Playlists", "Currated playlist for your current vibes", OptionIcon.Painter(painterResource(id = R.drawable.kind_of_music_playlist))),
+        ContentOption("Playlists", "Curated playlist for your current vibes", OptionIcon.Painter(painterResource(id = R.drawable.kind_of_music_playlist))),
         ContentOption("Track", "Individual songs that capture your mood", OptionIcon.Painter(painterResource(id = R.drawable.kind_of_music_music)))
     )
 
@@ -120,7 +119,7 @@ fun SelectKindOfMusic(navController: NavController, moodName: String) {
                 },
                 navigationIcon = {
                     IconButton(onClick = { navController.navigate("selectMood") }) {
-                        Icon(Icons.Filled.ArrowBack, contentDescription = "Back")
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(

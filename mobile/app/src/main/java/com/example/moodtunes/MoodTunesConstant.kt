@@ -79,4 +79,4 @@ val MOOD_ICONS = mapOf(
     Mood.Melancholic to "🌧️"
 )
 
-val MOOD_NAME_TO_MOOD_OBJ: Map<String, Mood> = Mood.values().associateBy { it.name }
+val MOOD_NAME_TO_MOOD_OBJ: Map<String, Mood> = Mood.entries.associateBy { it.name }

@@ -52,6 +52,7 @@ fun MoodTunesTextField(
             unfocusedContainerColor = fillColor,
             focusedContainerColor = fillColor,
             focusedTextColor = textColor,
+            unfocusedTextColor = textColor,
             focusedBorderColor = outlineColor,
             unfocusedBorderColor = outlineColor,
             focusedLabelColor = outlineColor,
