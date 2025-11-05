@@ -15,26 +15,18 @@ import com.example.moodtunes.components.PageSelected
 
 @Composable
 fun HistoryPage(navController: NavController) {
-    Scaffold (
-        modifier = Modifier
-            .background(
-                brush = Brush.linearGradient(
-                    colors = listOf(
-                        Color(0xFF312B90),
-                        Color.Black,
-                        Color(0xFF312B90)
-                    ),
-                )
-            ),
-        content = { innerPadding ->
-            Background {
-                Text(
-                    "HistoryPage",
-                    modifier = Modifier.padding(innerPadding),
-                    color = Color.White
-                )
-            }
-        },
-        bottomBar = { BottomBar(navController, PageSelected.History) }
-    )
+    Background {
+        Scaffold (
+            content = { innerPadding ->
+                Background {
+                    Text(
+                        "HistoryPage",
+                        modifier = Modifier.padding(innerPadding),
+                        color = Color.White
+                    )
+                }
+            },
+            bottomBar = { BottomBar(navController, PageSelected.History) }
+        )
+    }
 }
