@@ -1,10 +1,8 @@
 package com.example.moodtunes.pages
 
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
@@ -28,7 +26,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.res.painterResource
@@ -40,10 +37,11 @@ import androidx.navigation.NavController
 import com.example.moodtunes.R
 import com.example.moodtunes.components.MoodTunesTextField
 import com.example.moodtunes.components.MoodTunesButtonField
+import com.example.moodtunes.components.Background
 
 @Composable
 fun LoginPage(navController: NavController) {
-    LoginBackground {
+    Background {
         Column(
             modifier = Modifier
                 .fillMaxSize(),
@@ -257,24 +255,5 @@ fun HasAnAccountForm(navController: NavController ,textSentence: String, textCli
                 .clickable { navController.navigate(redirect) }
                 .padding(horizontal = 8.dp)
         )
-    }
-}
-
-@Composable
-fun LoginBackground(content: @Composable () -> Unit) {
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(
-                brush = Brush.linearGradient(
-                    colors = listOf(
-                        Color(0xFF312B90),
-                        Color.Black,
-                        Color(0xFF312B90)
-                    ),
-                )
-            )
-    ) {
-        content()
     }
 }
