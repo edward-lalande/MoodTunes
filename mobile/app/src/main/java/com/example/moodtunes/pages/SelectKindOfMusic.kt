@@ -23,6 +23,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.example.moodtunes.R
+import com.example.moodtunes.components.TopBar
 
 sealed class OptionIcon {
     data class Vector(val imageVector: ImageVector) : OptionIcon()
@@ -108,25 +109,11 @@ fun SelectKindOfMusic(navController: NavController, moodName: String) {
 
     Scaffold(
         topBar = {
-            TopAppBar(
-                title = {
-                    Text(
-                        text = "Select Content Type",
-                        modifier = Modifier.fillMaxWidth()
-                            .offset(x = (-24).dp),
-                        textAlign = TextAlign.Center
-                    )
-                },
-                navigationIcon = {
-                    IconButton(onClick = { navController.navigate("selectMood") }) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
-                    }
-                },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = Color.Black,
-                    navigationIconContentColor = Color.White,
-                    titleContentColor = Color.White
-                )
+            TopBar(
+                navController= navController,
+                title = "Select Content Type",
+                backRoute = "select-mood",
+                backDescription = "Back"
             )
         },
         modifier = Modifier.fillMaxSize(),
