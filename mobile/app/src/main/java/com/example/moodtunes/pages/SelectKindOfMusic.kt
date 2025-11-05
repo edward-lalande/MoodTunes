@@ -24,6 +24,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.example.moodtunes.R
+import com.example.moodtunes.components.TopBar
 import com.example.moodtunes.components.Background
 import com.example.moodtunes.components.MoodTunesButtonField
 
@@ -107,32 +108,15 @@ fun ContentTypeSelector(selectedOption: String, onOptionSelected: (String) -> Un
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SelectKindOfMusic(navController: NavController, moodName: String) {
-    var selectedOption by remember { mutableStateOf("") }
+    var selectedOption by remember { mutableStateOf("Album") }
 
     Scaffold(
         topBar = {
-            TopAppBar(
-                title = {
-                    Text(
-                        text = "Select Content Type",
-                        modifier = Modifier.fillMaxWidth()
-                            .offset(x = (-24).dp)
-                            .background(
-                                color = Color.Transparent
-                            ),
-                        textAlign = TextAlign.Center
-                    )
-                },
-                navigationIcon = {
-                    IconButton(onClick = { navController.navigate("selectMood") }) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
-                    }
-                },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = Color.Black,
-                    navigationIconContentColor = Color.White,
-                    titleContentColor = Color.White
-                )
+            TopBar(
+                navController = navController,
+                title = "Select Content Type",
+                backRoute = "select-mood",
+                backDescription = "Back"
             )
         },
         modifier = Modifier

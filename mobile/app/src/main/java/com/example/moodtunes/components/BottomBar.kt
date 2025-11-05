@@ -41,22 +41,6 @@ fun BottomBar(navController: NavController, page: PageSelected) {
             modifier = Modifier.fillMaxWidth()
         ){
             IconButton(
-                onClick = { navController.navigate("select-mood") },
-                modifier = Modifier.width(34.dp).height(34.dp),
-                colors = IconButtonColors(
-                    contentColor = if (page == PageSelected.Home) Color(0xFF7E6BBA) else Color.White,
-                    containerColor = Color.Black,
-                    disabledContentColor = if (page == PageSelected.Home) Color(0xFF7E6BBA) else Color.White,
-                    disabledContainerColor = Color.Black
-                ),
-            ) {
-                Icon(
-                    imageVector = Icons.Default.Home,
-                    contentDescription = "Home",
-                    modifier = Modifier.width(34.dp).height(34.dp)
-                )
-            }
-            IconButton(
                 onClick = { navController.navigate("history") },
                 modifier = Modifier.width(34.dp).height(34.dp),
                 colors = IconButtonColors(
@@ -70,6 +54,22 @@ fun BottomBar(navController: NavController, page: PageSelected) {
                     painter = painterResource(R.drawable.history_line_icon),
                     contentDescription = "history",
                     modifier = Modifier.width(34.dp).height(29.dp)
+                )
+            }
+            IconButton(
+                onClick = { navController.navigate("select-mood") },
+                modifier = Modifier.width(34.dp).height(34.dp),
+                colors = IconButtonColors(
+                    contentColor = if (page == PageSelected.Home) Color(0xFF7E6BBA) else Color.White,
+                    containerColor = Color.Black,
+                    disabledContentColor = if (page == PageSelected.Home) Color(0xFF7E6BBA) else Color.White,
+                    disabledContainerColor = Color.Black
+                ),
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Home,
+                    contentDescription = "Home",
+                    modifier = Modifier.width(34.dp).height(34.dp)
                 )
             }
             IconButton(
