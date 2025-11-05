@@ -1,6 +1,3 @@
-import com.example.moodtunes.pages.ContentOption
-import com.example.moodtunes.pages.OptionIcon
-
 enum class Mood {
     Happy,
     Energetic,

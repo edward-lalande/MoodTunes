@@ -13,15 +13,16 @@ import com.example.moodtunes.components.PageSelected
 
 @Composable
 fun ProfilePage(navController: NavController) {
-    Background {
-        Scaffold (
-            content = { innerPadding ->
-                Text("ProfilePage",
+    Scaffold (
+        content = { innerPadding ->
+            Background {
+                Text(
+                    "ProfilePage",
                     modifier = Modifier.padding(innerPadding),
                     color = Color.White
                 )
-            },
-            bottomBar = { BottomBar(navController, PageSelected.Profile) }
-        )
-    }
+            }
+        },
+        bottomBar = { BottomBar(navController, PageSelected.Profile) }
+    )
 }
