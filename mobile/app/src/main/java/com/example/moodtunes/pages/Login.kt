@@ -224,17 +224,21 @@ fun SignInAndUpForm(navController: NavController, buttonText: String, signUp: Bo
         onClick = {
             navController.navigate("select-mood")
         },
-        text = buttonText,
         modifier = Modifier
             .fillMaxWidth()
             .padding(16.dp),
         backgroundColor = Color(0xFF5B21B6),
         disabledContainerColor = Color(0x775B21B6),
-        textStyle = TextStyle(
-            fontWeight = FontWeight.Bold,
-            fontSize = 18.sp
-        ),
-        enabled = isEnableButton
+        enabled = isEnableButton,
+        content = {
+            Text(
+                text = buttonText,
+                style = TextStyle(
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 18.sp
+                )
+            )
+        }
     )
 }
 

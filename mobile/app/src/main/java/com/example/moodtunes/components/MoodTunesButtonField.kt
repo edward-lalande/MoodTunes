@@ -8,21 +8,18 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ButtonElevation
 import androidx.compose.material3.Icon
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.dp
 
 @Composable
 fun MoodTunesButtonField(
-    text: String,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
-    backgroundColor: Color = Color.Blue,
+    backgroundColor: Color = Color.Transparent,
     contentColor: Color = Color.White,
     disabledContentColor: Color = Color.Gray,
     disabledContainerColor: Color = Color.Black,
@@ -31,7 +28,7 @@ fun MoodTunesButtonField(
     border: BorderStroke? = null,
     elevation: ButtonElevation? = ButtonDefaults.buttonElevation(),
     icon: ImageVector? = null,
-    textStyle: TextStyle = TextStyle.Default
+    content: @Composable () -> Unit
 ) {
     Button(
         onClick = onClick,
@@ -54,10 +51,6 @@ fun MoodTunesButtonField(
                 contentDescription = null
             )
         }
-
-        Text(
-            text = text,
-            style = textStyle
-        )
+        content()
     }
 }

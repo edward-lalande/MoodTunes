@@ -18,12 +18,14 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.example.moodtunes.R
 import com.example.moodtunes.components.Background
+import com.example.moodtunes.components.MoodTunesButtonField
 
 sealed class OptionIcon {
     data class Vector(val imageVector: ImageVector) : OptionIcon()
@@ -114,7 +116,10 @@ fun SelectKindOfMusic(navController: NavController, moodName: String) {
                     Text(
                         text = "Select Content Type",
                         modifier = Modifier.fillMaxWidth()
-                            .offset(x = (-24).dp),
+                            .offset(x = (-24).dp)
+                            .background(
+                                color = Color.Transparent
+                            ),
                         textAlign = TextAlign.Center
                     )
                 },
@@ -141,29 +146,29 @@ fun SelectKindOfMusic(navController: NavController, moodName: String) {
                     .padding(horizontal = 16.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                Button(
+                MoodTunesButtonField(
                     onClick = {},
                     modifier = Modifier
                         .padding(top = 22.dp, bottom = 14.dp)
-                        .height(40.dp)
-                        .width(120.dp)
+                        .height(48.dp)
+                        .width(128.dp)
                         .background(
                             brush = Brush.horizontalGradient(
                                 colors = listOf(Color(0xFF8E2DE2), Color(0xFFDA22FF))
                             ),
                             shape = RoundedCornerShape(100.dp)
                         ),
-                    colors = ButtonDefaults.buttonColors(containerColor = Color.Transparent),
-                    contentPadding = PaddingValues()
-                ) {
-                    Text(
-                        text = "${MOOD_ICONS[MOOD_NAME_TO_MOOD_OBJ[moodName]]} $moodName",
-                        color = Color.White,
-                        fontSize = 18.sp,
-                        textAlign = TextAlign.Center,
-                        modifier = Modifier.fillMaxWidth()
-                    )
-                }
+                    content = {
+                        Text(
+                            text = "${MOOD_ICONS[MOOD_NAME_TO_MOOD_OBJ[moodName]]} $moodName",
+                            color = Color.White,
+                            fontSize = 18.sp,
+                            style = TextStyle(
+                                background = Color.Transparent
+                            )
+                        )
+                    }
+                )
 
                 Spacer(modifier = Modifier.height(8.dp))
 
@@ -182,7 +187,7 @@ fun SelectKindOfMusic(navController: NavController, moodName: String) {
 
                 Spacer(modifier = Modifier.height(32.dp))
 
-                Button(
+                MoodTunesButtonField(
                     onClick = {
                         if (selectedOption != "") {
                             navController.navigate("results/$selectedOption/$moodName")
@@ -197,8 +202,7 @@ fun SelectKindOfMusic(navController: NavController, moodName: String) {
                             ),
                             shape = RoundedCornerShape(50.dp)
                         ),
-                    colors = ButtonDefaults.buttonColors(containerColor = Color.Transparent),
-                    contentPadding = PaddingValues()
+                    backgroundColor = Color.Transparent,
                 ) {
                     Text("Continue", color = Color.White, fontSize = 20.sp)
                 }
