@@ -106,6 +106,9 @@ fun ContentTypeSelector(selectedOption: String, onOptionSelected: (String) -> Un
 fun SelectKindOfMusic(navController: NavController, moodName: String) {
     var selectedOption by remember { mutableStateOf("") }
 
+    LoginBackground {
+
+    }
     Scaffold(
         topBar = {
             TopAppBar(
@@ -129,76 +132,78 @@ fun SelectKindOfMusic(navController: NavController, moodName: String) {
                 )
             )
         },
-        modifier = Modifier.fillMaxSize(),
-        containerColor = Color.Black,
+        modifier = Modifier
+            .fillMaxWidth(),
     ) { innerPadding ->
-        Column(
-            modifier = Modifier
-                .padding(innerPadding)
-                .fillMaxSize()
-                .padding(horizontal = 16.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            Button(
-                onClick = {},
+        LoginBackground {
+            Column(
                 modifier = Modifier
-                    .padding(top = 22.dp, bottom = 14.dp)
-                    .height(40.dp)
-                    .width(120.dp)
-                    .background(
-                        brush = Brush.horizontalGradient(
-                            colors = listOf(Color(0xFF8E2DE2), Color(0xFFDA22FF))
-                        ),
-                        shape = RoundedCornerShape(100.dp)
-                    ),
-                colors = ButtonDefaults.buttonColors(containerColor = Color.Transparent),
-                contentPadding = PaddingValues()
+                    .padding(innerPadding)
+                    .fillMaxSize()
+                    .padding(horizontal = 16.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
             ) {
+                Button(
+                    onClick = {},
+                    modifier = Modifier
+                        .padding(top = 22.dp, bottom = 14.dp)
+                        .height(40.dp)
+                        .width(120.dp)
+                        .background(
+                            brush = Brush.horizontalGradient(
+                                colors = listOf(Color(0xFF8E2DE2), Color(0xFFDA22FF))
+                            ),
+                            shape = RoundedCornerShape(100.dp)
+                        ),
+                    colors = ButtonDefaults.buttonColors(containerColor = Color.Transparent),
+                    contentPadding = PaddingValues()
+                ) {
+                    Text(
+                        text = "${MOOD_ICONS[MOOD_NAME_TO_MOOD_OBJ[moodName]]} $moodName",
+                        color = Color.White,
+                        fontSize = 18.sp,
+                        textAlign = TextAlign.Center,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                }
+
+                Spacer(modifier = Modifier.height(8.dp))
+
                 Text(
-                    text = "${MOOD_ICONS[MOOD_NAME_TO_MOOD_OBJ[moodName]]} $moodName",
-                    color = Color.White,
-                    fontSize = 18.sp,
+                    text = "What type of content would you like for this mood?",
+                    fontSize = 14.sp,
+                    color = Color.White.copy(alpha = 0.6f),
                     textAlign = TextAlign.Center,
                     modifier = Modifier.fillMaxWidth()
                 )
-            }
 
-            Spacer(modifier = Modifier.height(8.dp))
+                ContentTypeSelector(
+                    selectedOption = selectedOption,
+                    onOptionSelected = { selectedOption = it }
+                )
 
-            Text(
-                text = "What type of content would you like for this mood?",
-                fontSize = 14.sp,
-                color = Color.White.copy(alpha = 0.6f),
-                textAlign = TextAlign.Center,
-                modifier = Modifier.fillMaxWidth()
-            )
+                Spacer(modifier = Modifier.height(32.dp))
 
-            ContentTypeSelector(
-                selectedOption = selectedOption,
-                onOptionSelected = { selectedOption = it }
-            )
-
-            Spacer(modifier = Modifier.height(32.dp))
-
-            Button(
-                onClick = {
-                    if (selectedOption != "") {
-                        navController.navigate("results/$selectedOption/$moodName")
-                    }
-                },
-                modifier = Modifier
-                    .height(60.dp)
-                    .width(200.dp)
-                    .background(
-                        brush = Brush.horizontalGradient(
-                            colors = listOf(Color(0xFF8E2DE2), Color(0xFFDA22FF))
+                Button(
+                    onClick = {
+                        if (selectedOption != "") {
+                            navController.navigate("results/$selectedOption/$moodName")
+                        }
+                    },
+                    modifier = Modifier
+                        .height(60.dp)
+                        .width(200.dp)
+                        .background(
+                            brush = Brush.horizontalGradient(
+                                colors = listOf(Color(0xFF8E2DE2), Color(0xFFDA22FF))
+                            ),
+                            shape = RoundedCornerShape(50.dp)
                         ),
-                        shape = RoundedCornerShape(50.dp)
-                    ),
-                colors = ButtonDefaults.buttonColors(containerColor = Color.Transparent),
-                contentPadding = PaddingValues()
-            ) {
-                Text("Continue", color = Color.White, fontSize = 20.sp)
+                    colors = ButtonDefaults.buttonColors(containerColor = Color.Transparent),
+                    contentPadding = PaddingValues()
+                ) {
+                    Text("Continue", color = Color.White, fontSize = 20.sp)
+                }
             }
         }
     }

@@ -2,12 +2,9 @@ package com.example.moodtunes.pages
 
 import MOOD_ICONS
 import Mood
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -18,10 +15,11 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import com.example.moodtunes.components.Background
 import com.example.moodtunes.components.BottomBar
 import com.example.moodtunes.components.MoodCard
-import com.example.moodtunes.components.MoodTunesTextField
 import com.example.moodtunes.components.SearchBar
+import com.example.moodtunes.components.PageSelected
 
 @Composable
 fun SelectMoodPages(navController: NavController) {
@@ -42,18 +40,20 @@ fun SelectMoodPages(navController: NavController) {
         Mood.Motivated
     )
 
-    val recentMoods = listOf(Mood.Happy, Mood.Calm, Mood.Energetic)
     Scaffold (
-        bottomBar = { BottomBar(navController) },
+        bottomBar = { BottomBar(navController, PageSelected.Home) },
         content = { innerPadding ->
-            LazyColumn(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .background(Color.Black)
-                    .padding(innerPadding)
-            ) {
-                item {
-                    Spacer(modifier = Modifier.height(24.dp))
+            val recentMoods = listOf(Mood.Happy, Mood.Calm, Mood.Energetic)
+
+            Background {
+                LazyColumn(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(paddingValues = innerPadding)
+                        .padding(horizontal = 8.dp)
+                ) {
+                    item {
+                        Spacer(modifier = Modifier.height(24.dp))
 
                     Text(
                         text = "How are you feeling today?",
@@ -78,73 +78,74 @@ fun SelectMoodPages(navController: NavController) {
 
                     SearchBar("Search for a mood...")
 
-                    Spacer(modifier = Modifier.height(32.dp))
+                        Spacer(modifier = Modifier.height(32.dp))
 
-                    SectionHeader(icon = "🔥", title = "Popular Moods")
+                        SectionHeader(icon = "🔥", title = "Popular Moods")
 
-                    Spacer(modifier = Modifier.height(16.dp))
-                }
-                item {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(12.dp)
-                    ) {
-                        popularMoods.forEach { mood ->
-                            MoodCard(
-                                mood = mood,
-                                modifier = Modifier.weight(1f),
-                                onClick = {
-                                    navController.navigate("select-kind-of-music/${mood.name}")
-                                }
-                            )
+                        Spacer(modifier = Modifier.height(16.dp))
+                    }
+                    item {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(12.dp)
+                        ) {
+                            popularMoods.forEach { mood ->
+                                MoodCard(
+                                    mood = mood,
+                                    modifier = Modifier.weight(1f),
+                                    onClick = {
+                                        navController.navigate("select-kind-of-music/${mood.name}")
+                                    }
+                                )
+                            }
                         }
+
+                        Spacer(modifier = Modifier.height(32.dp))
                     }
 
-                    Spacer(modifier = Modifier.height(32.dp))
-                }
-
-                item {
-                    SectionHeader(icon = "🎭", title = "All Moods")
-                    Spacer(modifier = Modifier.height(16.dp))
-                }
-
-                items(allMoods.chunked(2).size) { index ->
-                    val moodPair = allMoods.chunked(2)[index]
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(12.dp)
-                    ) {
-                        moodPair.forEach { mood ->
-                            MoodCard(
-                                mood = mood,
-                                modifier = Modifier.weight(1f),
-                                onClick = {
-                                    navController.navigate("select-kind-of-music/${mood.name}")
-                                }
-                            )
-                        }
-                        if (moodPair.size == 1) {
-                            Spacer(modifier = Modifier.weight(1f))
-                        }
+                    item {
+                        SectionHeader(icon = "🎭", title = "All Moods")
+                        Spacer(modifier = Modifier.height(16.dp))
                     }
-                    Spacer(modifier = Modifier.height(12.dp))
-                }
-                item {
-                    Spacer(modifier = Modifier.height(20.dp))
-                    SectionHeader(icon = "🕐", title = "Recently Used")
 
-                    Spacer(modifier = Modifier.height(16.dp))
-                }
-                item {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(12.dp)
-                    ) {
-                        recentMoods.forEach { mood ->
-                            RecentMoodPill(mood = mood)
+                    items(allMoods.chunked(2).size) { index ->
+                        val moodPair = allMoods.chunked(2)[index]
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(12.dp)
+                        ) {
+                            moodPair.forEach { mood ->
+                                MoodCard(
+                                    mood = mood,
+                                    modifier = Modifier.weight(1f),
+                                    onClick = {
+                                        navController.navigate("select-kind-of-music/${mood.name}")
+                                    }
+                                )
+                            }
+                            if (moodPair.size == 1) {
+                                Spacer(modifier = Modifier.weight(1f))
+                            }
                         }
+                        Spacer(modifier = Modifier.height(12.dp))
                     }
-                    Spacer(modifier = Modifier.height(100.dp))
+                    item {
+                        Spacer(modifier = Modifier.height(20.dp))
+                        SectionHeader(icon = "🕐", title = "Recently Used")
+
+                        Spacer(modifier = Modifier.height(16.dp))
+                    }
+                    item {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(12.dp)
+                        ) {
+                            recentMoods.forEach { mood ->
+                                RecentMoodPill(mood = mood)
+                            }
+                        }
+                        Spacer(modifier = Modifier.height(100.dp))
+                    }
                 }
             }
         }
