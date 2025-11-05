@@ -9,18 +9,26 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Person
-import androidx.compose.material.icons.filled.Phone
 import androidx.compose.material3.BottomAppBar
+import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.IconButtonColors
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
+import com.example.moodtunes.R
+
+enum class PageSelected {
+    Home,
+    History,
+    Profile,
+}
 
 @Composable
-fun BottomBar(navController: NavController) {
+fun BottomBar(navController: NavController, page: PageSelected) {
     BottomAppBar (
         modifier = Modifier
             .fillMaxWidth()
@@ -29,44 +37,56 @@ fun BottomBar(navController: NavController) {
         containerColor = Color.Black,
     ){
         Row (
-            horizontalArrangement = Arrangement.SpaceBetween,
+            horizontalArrangement = Arrangement.SpaceAround,
             modifier = Modifier.fillMaxWidth()
         ){
             IconButton(
-                onClick = { navController.navigate("select-mood") },
-                modifier = Modifier.width(16.dp),
+                onClick = { navController.navigate("history") },
+                modifier = Modifier.width(34.dp).height(34.dp),
                 colors = IconButtonColors(
-                    contentColor = Color.White,
-                    containerColor = Color.White,
-                    disabledContainerColor = Color.Blue,
-                    disabledContentColor = Color.Blue
+                    contentColor = if (page == PageSelected.History) Color(0xFF7E6BBA) else Color.White,
+                    containerColor = Color.Black,
+                    disabledContentColor = if (page == PageSelected.History) Color(0xFF7E6BBA) else Color.White,
+                    disabledContainerColor = Color.Black
                 )
             ) {
-                Icons.Default.Home
+                Icon(
+                    painter = painterResource(R.drawable.history_line_icon),
+                    contentDescription = "history",
+                    modifier = Modifier.width(34.dp).height(29.dp)
+                )
             }
             IconButton(
-                onClick = { navController.navigate("history") },
-                modifier = Modifier.width(16.dp),
+                onClick = { navController.navigate("select-mood") },
+                modifier = Modifier.width(34.dp).height(34.dp),
                 colors = IconButtonColors(
-                    contentColor = Color.White,
-                    containerColor = Color.White,
-                    disabledContainerColor = Color.Blue,
-                    disabledContentColor = Color.Blue
-                )
+                    contentColor = if (page == PageSelected.Home) Color(0xFF7E6BBA) else Color.White,
+                    containerColor = Color.Black,
+                    disabledContentColor = if (page == PageSelected.Home) Color(0xFF7E6BBA) else Color.White,
+                    disabledContainerColor = Color.Black
+                ),
             ) {
-                Icons.Default.Phone
+                Icon(
+                    imageVector = Icons.Default.Home,
+                    contentDescription = "Home",
+                    modifier = Modifier.width(34.dp).height(34.dp)
+                )
             }
             IconButton(
                 onClick = { navController.navigate("profile") },
-                modifier = Modifier.width(16.dp),
+                modifier = Modifier.width(34.dp).height(34.dp),
                 colors = IconButtonColors(
-                    contentColor = Color.White,
-                    containerColor = Color.White,
-                    disabledContainerColor = Color.Blue,
-                    disabledContentColor = Color.Blue
+                    contentColor = if (page == PageSelected.Profile) Color(0xFF7E6BBA) else Color.White,
+                    containerColor = Color.Black,
+                    disabledContentColor = if (page == PageSelected.Profile) Color(0xFF7E6BBA) else Color.White,
+                    disabledContainerColor = Color.Black
                 )
             ) {
-                Icons.Default.Person
+                Icon(
+                    imageVector = Icons.Default.Person,
+                    contentDescription = "profile",
+                    modifier = Modifier.width(34.dp).height(34.dp)
+                )
             }
         }
     }

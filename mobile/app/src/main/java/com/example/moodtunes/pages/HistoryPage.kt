@@ -9,6 +9,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.navigation.NavController
 import com.example.moodtunes.components.Background
 import com.example.moodtunes.components.BottomBar
+import com.example.moodtunes.components.PageSelected
 
 @Composable
 fun HistoryPage(navController: NavController) {
@@ -22,6 +23,6 @@ fun HistoryPage(navController: NavController) {
                 )
             }
         },
-        bottomBar = { BottomBar(navController) }
+        bottomBar = { BottomBar(navController, PageSelected.History) }
     )
 }
