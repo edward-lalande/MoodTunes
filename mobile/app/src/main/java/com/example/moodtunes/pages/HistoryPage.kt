@@ -7,16 +7,20 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.navigation.NavController
+import com.example.moodtunes.components.Background
 import com.example.moodtunes.components.BottomBar
 
 @Composable
 fun HistoryPage(navController: NavController) {
     Scaffold (
         content = { innerPadding ->
-            Text("HistoryPage",
-                modifier = Modifier.padding(innerPadding),
-                color = Color.White
-            )
+            Background {
+                Text(
+                    "HistoryPage",
+                    modifier = Modifier.padding(innerPadding),
+                    color = Color.White
+                )
+            }
         },
         bottomBar = { BottomBar(navController) }
     )
