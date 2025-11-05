@@ -7,17 +7,22 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.navigation.NavController
+import com.example.moodtunes.components.Background
 import com.example.moodtunes.components.BottomBar
+import com.example.moodtunes.components.PageSelected
 
 @Composable
 fun ProfilePage(navController: NavController) {
     Scaffold (
         content = { innerPadding ->
-            Text("ProfilePage",
-                modifier = Modifier.padding(innerPadding),
-                color = Color.White
-            )
+            Background {
+                Text(
+                    "ProfilePage",
+                    modifier = Modifier.padding(innerPadding),
+                    color = Color.White
+                )
+            }
         },
-        bottomBar = { BottomBar(navController) }
+        bottomBar = { BottomBar(navController, PageSelected.Profile) }
     )
 }
