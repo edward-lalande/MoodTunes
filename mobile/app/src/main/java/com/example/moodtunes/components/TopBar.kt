@@ -1,5 +1,6 @@
 package com.example.moodtunes.components
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.offset
 import androidx.compose.material.icons.Icons
@@ -25,7 +26,10 @@ fun TopBar(navController: NavController, title: String, backRoute: String, backD
             Text(
                 text = title,
                 modifier = Modifier.fillMaxWidth()
-                    .offset(x = (-24).dp),
+                    .offset(x = (-24).dp)
+                    .background(
+                        color = Color.Transparent
+                    ),
                 textAlign = TextAlign.Center
             )
         },
@@ -35,7 +39,7 @@ fun TopBar(navController: NavController, title: String, backRoute: String, backD
             }
         },
         colors = TopAppBarDefaults.topAppBarColors(
-            containerColor = Color.Black,
+            containerColor = Color.Gray.copy(alpha = 0.1f),
             navigationIconContentColor = Color.White,
             titleContentColor = Color.White
         )

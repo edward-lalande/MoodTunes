@@ -7,6 +7,8 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -110,28 +112,12 @@ fun SelectKindOfMusic(navController: NavController, moodName: String) {
 
     Scaffold(
         topBar = {
-            TopAppBar(
-                title = {
-                    Text(
-                        text = "Select Content Type",
-                        modifier = Modifier.fillMaxWidth()
-                            .offset(x = (-24).dp)
-                            .background(
-                                color = Color.Transparent
-                            ),
-                        textAlign = TextAlign.Center
-                    )
-                },
-                navigationIcon = {
-                    IconButton(onClick = { navController.navigate("selectMood") }) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
-                    }
-                },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = Color.Black,
-                    navigationIconContentColor = Color.White,
-                    titleContentColor = Color.White
-                )
+            TopBar(
+                navController = navController,
+                title = "Select Content Type",
+                backRoute = "select-mood",
+                backDescription = "Back"
+            )
         },
         modifier = Modifier
             .fillMaxWidth(),
