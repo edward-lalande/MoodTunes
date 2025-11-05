@@ -21,11 +21,10 @@ import androidx.navigation.NavController
 import com.example.moodtunes.components.BottomBar
 import com.example.moodtunes.components.MoodCard
 import com.example.moodtunes.components.MoodTunesTextField
+import com.example.moodtunes.components.SearchBar
 
 @Composable
 fun SelectMoodPages(navController: NavController) {
-    var searchText by remember { mutableStateOf("") }
-
     val popularMoods = listOf(Mood.Happy, Mood.Sad)
 
     val allMoods = listOf(
@@ -77,21 +76,7 @@ fun SelectMoodPages(navController: NavController) {
 
                     Spacer(modifier = Modifier.height(20.dp))
 
-                    MoodTunesTextField(
-                        text = searchText,
-                        onTextChange = { searchText = it },
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(56.dp),
-                        leadingIcon = Icons.Default.Search,
-                        placeholder = "Search for a mood...",
-                        textColor = Color.White,
-                        placeholderColor = Color.White.copy(alpha = 0.4f),
-                        outlineColor = Color.White.copy(alpha = 0.01f),
-                        fillColor = Color.White.copy(alpha = 0.05f),
-                        backgroundColor = Color.Transparent,
-                        iconColor = Color.White.copy(alpha = 0.4f)
-                    )
+                    SearchBar("Search for a mood...")
 
                     Spacer(modifier = Modifier.height(32.dp))
 
