@@ -23,6 +23,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.example.moodtunes.R
+import com.example.moodtunes.components.Background
 
 sealed class OptionIcon {
     data class Vector(val imageVector: ImageVector) : OptionIcon()
@@ -106,9 +107,6 @@ fun ContentTypeSelector(selectedOption: String, onOptionSelected: (String) -> Un
 fun SelectKindOfMusic(navController: NavController, moodName: String) {
     var selectedOption by remember { mutableStateOf("") }
 
-    LoginBackground {
-
-    }
     Scaffold(
         topBar = {
             TopAppBar(
@@ -135,7 +133,7 @@ fun SelectKindOfMusic(navController: NavController, moodName: String) {
         modifier = Modifier
             .fillMaxWidth(),
     ) { innerPadding ->
-        LoginBackground {
+        Background {
             Column(
                 modifier = Modifier
                     .padding(innerPadding)
