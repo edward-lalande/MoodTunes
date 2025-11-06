@@ -12,6 +12,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 
 @Composable
@@ -28,12 +30,15 @@ fun MoodTunesTextField(
     fillColor: Color = Color.White,
     backgroundColor: Color = Color.White,
     iconColor: Color = Color.Gray,
+    isPassword: Boolean = false
 ) {
     OutlinedTextField(
         value = text,
+        visualTransformation = if (isPassword) PasswordVisualTransformation() else VisualTransformation.None,
         onValueChange = onTextChange,
         modifier = modifier
-            .clip(RoundedCornerShape(16.dp)).background(backgroundColor)
+            .clip(RoundedCornerShape(16.dp))
+            .background(backgroundColor)
             .border(2.dp, outlineColor, RoundedCornerShape(16.dp)),
         placeholder = {
             if (placeholder != null) {

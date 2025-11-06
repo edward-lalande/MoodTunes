@@ -163,6 +163,51 @@ fun SpotifyButton() {
 }
 
 @Composable
+fun PasswordForm(
+    confirmedRequired: Boolean,
+    passwordText: String,
+    onPasswordChange: (String) -> Unit,
+    confirmPasswordText: String,
+    onConfirmPasswordChange: (String) -> Unit
+) {
+    MoodTunesTextField(
+        isPassword = true,
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 8.dp, horizontal = 16.dp),
+        text = passwordText,
+        onTextChange = { newText -> onPasswordChange(newText) },
+        outlineColor = Color(0xFF5B21B6),
+        placeholder = "Password",
+        backgroundColor = Color(0xFF1A1A1A).copy(alpha = 0.1f),
+        fillColor = Color.Transparent,
+        textColor = Color.White
+    )
+
+    if (confirmedRequired) {
+        var outlineConfirmField = Color.Red
+
+        if (confirmPasswordText == passwordText) {
+            outlineConfirmField = Color(0xFF5B21B6)
+        }
+
+        MoodTunesTextField(
+            isPassword = true,
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(vertical = 8.dp, horizontal = 16.dp),
+            text = confirmPasswordText,
+            onTextChange = { newText -> onConfirmPasswordChange(newText) },
+            outlineColor = outlineConfirmField,
+            placeholder = "Confirm Password",
+            backgroundColor = Color(0xFF1A1A1A).copy(alpha = 0.1f),
+            fillColor = Color.Transparent,
+            textColor = Color.White
+        )
+    }
+}
+
+@Composable
 fun SignInAndUpForm(navController: NavController, buttonText: String, signUp: Boolean) {
     var usernameText by remember { mutableStateOf("") }
     var emailText by remember { mutableStateOf("") }
@@ -194,40 +239,13 @@ fun SignInAndUpForm(navController: NavController, buttonText: String, signUp: Bo
         textColor = Color.White
     )
 
-    MoodTunesTextField(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(vertical = 8.dp, horizontal = 16.dp),
-        text = passwordText,
-        onTextChange = { newText -> passwordText = newText },
-        outlineColor = Color(0xFF5B21B6),
-        placeholder = "Password",
-        backgroundColor = Color(0xFF1A1A1A).copy(alpha = 0.1f),
-        fillColor = Color.Transparent,
-        textColor = Color.White
+    PasswordForm(
+        confirmedRequired = signUp,
+        passwordText = passwordText,
+        onPasswordChange = { newText -> passwordText = newText },
+        confirmPasswordText = confirmPasswordText,
+        onConfirmPasswordChange = { newText -> confirmPasswordText = newText }
     )
-
-    if (signUp) {
-        var outlineConfirmField = Color.Red
-
-        if (confirmPasswordText == passwordText) {
-            outlineConfirmField = Color(0xFF5B21B6)
-        }
-
-        MoodTunesTextField(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(vertical = 8.dp, horizontal = 16.dp),
-            text = confirmPasswordText,
-            onTextChange = { newText -> confirmPasswordText = newText },
-            outlineColor = outlineConfirmField,
-            placeholder = "Confirm Password",
-            backgroundColor = Color(0xFF1A1A1A).copy(alpha = 0.1f),
-            fillColor = Color.Transparent,
-            textColor = Color.White
-        )
-    }
-
     var isEnableButton = true
     if (passwordText != confirmPasswordText && signUp) {
         isEnableButton = false

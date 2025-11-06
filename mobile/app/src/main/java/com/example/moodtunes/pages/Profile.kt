@@ -71,31 +71,12 @@ fun ProfilePage(navController: NavController) {
                         trailingIcon = Icons.Default.Edit
                     )
 
-                    MoodTunesTextField(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(vertical = 8.dp, horizontal = 16.dp),
-                        text = password,
-                        onTextChange = { newText -> password = newText },
-                        outlineColor = Color(0xFF5B21B6),
-                        placeholder = "Password",
-                        backgroundColor = Color(0xFF1A1A1A).copy(alpha = 0.1f),
-                        fillColor = Color.Transparent,
-                        textColor = Color.White,
-                        trailingIcon = Icons.Default.Edit
-                    )
-
-                    MoodTunesTextField(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(vertical = 8.dp, horizontal = 16.dp),
-                        text = confirmPassword,
-                        onTextChange = { newText -> confirmPassword = newText },
-                        outlineColor = Color(0xFF5B21B6),
-                        placeholder = "Confirm Password",
-                        backgroundColor = Color(0xFF1A1A1A).copy(alpha = 0.1f),
-                        fillColor = Color.Transparent,
-                        textColor = Color.White,
+                    PasswordForm(
+                        confirmedRequired = true,
+                        passwordText = password,
+                        onPasswordChange = { newText -> password = newText },
+                        confirmPasswordText = confirmPassword,
+                        onConfirmPasswordChange = { newText -> confirmPassword = newText }
                     )
                     MoodTunesButtonField(
                         onClick = {
