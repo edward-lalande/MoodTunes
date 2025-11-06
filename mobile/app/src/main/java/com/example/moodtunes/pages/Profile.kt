@@ -123,7 +123,7 @@ fun ProfilePage(navController: NavController) {
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(16.dp),
-                        backgroundColor = Color(0xFFB62121), // A CHANGER EN ROUGE
+                        backgroundColor = Color(0xFFB62121),
                         disabledContainerColor = Color(0x77B62121),
                         content = {
                             Text(
@@ -134,7 +134,6 @@ fun ProfilePage(navController: NavController) {
                                 )
                             )
                         }
-
                     )
 
                 }
