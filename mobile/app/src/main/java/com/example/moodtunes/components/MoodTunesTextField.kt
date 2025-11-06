@@ -20,13 +20,14 @@ fun MoodTunesTextField(
     onTextChange: (String) -> Unit,
     modifier: Modifier = Modifier,
     leadingIcon: ImageVector? = null,
+    trailingIcon: ImageVector? = null,
     placeholder: String? = null,
     textColor: Color = Color.Black,
     placeholderColor: Color = Color.Gray,
     outlineColor: Color = Color.Black,
     fillColor: Color = Color.White,
     backgroundColor: Color = Color.White,
-    iconColor: Color = Color.Gray
+    iconColor: Color = Color.Gray,
 ) {
     OutlinedTextField(
         value = text,
@@ -48,6 +49,15 @@ fun MoodTunesTextField(
                 )
             }
         },
+        trailingIcon = {
+            if (trailingIcon != null) {
+                Icon(
+                    imageVector = trailingIcon,
+                    contentDescription = "Icon",
+                    tint = iconColor
+                )
+            }
+        },
         colors = OutlinedTextFieldDefaults.colors(
             unfocusedContainerColor = fillColor,
             focusedContainerColor = fillColor,
@@ -58,6 +68,6 @@ fun MoodTunesTextField(
             focusedLabelColor = outlineColor,
             unfocusedLabelColor = placeholderColor,
             cursorColor = outlineColor
-        )
+        ),
     )
 }
