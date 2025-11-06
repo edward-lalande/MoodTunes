@@ -164,10 +164,23 @@ fun SpotifyButton() {
 
 @Composable
 fun SignInAndUpForm(navController: NavController, buttonText: String, signUp: Boolean) {
+    var usernameText by remember { mutableStateOf("") }
     var emailText by remember { mutableStateOf("") }
     var passwordText by remember { mutableStateOf("") }
     var confirmPasswordText by remember { mutableStateOf("") }
 
+    MoodTunesTextField(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(16.dp),
+        text = usernameText,
+        onTextChange = { newText -> usernameText = newText },
+        outlineColor = Color(0xFF5B21B6),
+        placeholder = "Username",
+        backgroundColor = Color(0xFF1A1A1A).copy(alpha = 0.1f),
+        fillColor = Color.Transparent,
+        textColor = Color.White
+    )
     MoodTunesTextField(
         modifier = Modifier
             .fillMaxWidth()
