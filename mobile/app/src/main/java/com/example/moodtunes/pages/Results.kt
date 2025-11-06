@@ -141,7 +141,7 @@ fun Result(navController: NavHostController, selectedOption: String, moodName: S
                         )
                         Image(
                             bitmap = bitmapImage.asImageBitmap(),
-                            contentDescription = "Pochette de l'album trouvé",
+                            contentDescription = "Album cover found",
                             modifier = Modifier
                                 .fillMaxWidth(0.8f)
                                 .aspectRatio(1f)
