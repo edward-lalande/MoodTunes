@@ -203,7 +203,7 @@ fun Result(navController: NavHostController, selectedOption: String, moodName: S
                                     fontSize = 20.sp,
                                     fontWeight = FontWeight.SemiBold,
                                     color = Color.White
-                                s)
+                                )
                             }
                         }
                     }
