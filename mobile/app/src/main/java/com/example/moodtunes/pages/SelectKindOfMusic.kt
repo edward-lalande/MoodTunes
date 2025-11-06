@@ -19,6 +19,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -135,7 +136,7 @@ fun SelectKindOfMusic(navController: NavController, moodName: String) {
                     modifier = Modifier
                         .padding(top = 22.dp, bottom = 14.dp)
                         .height(48.dp)
-                        .width(128.dp)
+                        .width(148.dp)
                         .background(
                             brush = Brush.horizontalGradient(
                                 colors = listOf(Color(0xFF8E2DE2), Color(0xFFDA22FF))
@@ -146,7 +147,8 @@ fun SelectKindOfMusic(navController: NavController, moodName: String) {
                         Text(
                             text = "${MOOD_ICONS[MOOD_NAME_TO_MOOD_OBJ[moodName]]} $moodName",
                             color = Color.White,
-                            fontSize = 18.sp,
+                            fontSize = 16.sp,
+                            fontWeight = FontWeight.Bold,
                             style = TextStyle(
                                 background = Color.Transparent
                             )
