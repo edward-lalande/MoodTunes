@@ -14,12 +14,10 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 
 @Composable
-fun SearchBar(placeholder: String) {
-    var searchText by remember { mutableStateOf("") }
-
+fun SearchBar(placeholder: String, searchText: String, onTextChange: (String) -> Unit) {
     MoodTunesTextField(
         text = searchText,
-        onTextChange = { searchText = it },
+        onTextChange = onTextChange,
         modifier = Modifier
             .fillMaxWidth()
             .height(56.dp),
