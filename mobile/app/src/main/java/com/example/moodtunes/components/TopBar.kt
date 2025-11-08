@@ -35,7 +35,10 @@ fun TopBar(navController: NavController, title: String, backRoute: String, backD
         },
         navigationIcon = {
             IconButton(onClick = { navController.navigate(backRoute) }) {
-                Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = backDescription)
+                Icon(
+                    Icons.AutoMirrored.Filled.ArrowBack,
+                    contentDescription = backDescription
+                )
             }
         },
         colors = TopAppBarDefaults.topAppBarColors(
