@@ -8,10 +8,19 @@ import io.github.smiley4.ktorswaggerui.dsl.*
 import io.ktor.http.*
 
 fun Route.userRoutes() {
+
     route("/user") {
+
         get("/data", {
             tags = listOf("User")
-            response { HttpStatusCode.OK to { body<UserResponse>() } }
+            summary = "Get user data"
+            description = "Returns basic information about the current user."
+            response {
+                HttpStatusCode.OK to {
+                    description = "User data retrieved successfully"
+                    body<UserResponse>()
+                }
+            }
         }) {
             call.respond(
                 UserResponse(
