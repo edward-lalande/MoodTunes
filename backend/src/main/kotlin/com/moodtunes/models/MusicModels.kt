@@ -10,7 +10,8 @@ data class MusicResponse(
     val title: String,
     val artist: String,
     val albumCoverUrl: String,
-    val mood: String
+    val mood: String,
+    val spotifyUrl: String
 )
 
 @Serializable
@@ -32,5 +33,13 @@ data class AddHistoryRequest(
     val token: String,
     val title: String,
     val artist: String,
-    val mood: String
+    val mood: String,
+    val spotifyUrl: String
+)
+
+@Serializable
+data class DeleteHistoryRequest(
+    val token: String,
+    val title: String,
+    val artist: String
 )

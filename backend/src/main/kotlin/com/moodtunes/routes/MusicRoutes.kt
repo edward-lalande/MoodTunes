@@ -23,7 +23,8 @@ fun Route.musicRoutes() {
                     title = "Mock Song",
                     artist = "Mock Artist",
                     albumCoverUrl = "https://placehold.co/300x300",
-                    mood = mood
+                    mood = mood,
+                    spotifyUrl = "https://spotify.com/placehold"
                 )
             )
         }
@@ -39,13 +40,31 @@ fun Route.musicRoutes() {
             call.respond(MusicHistoryResponse("mockUser", history))
         }
 
-        post("/history/add", {
+        post("/history", {
             tags = listOf("Music")
             request { body<AddHistoryRequest>() }
             response { HttpStatusCode.Created to { description = "History added" } }
         }) {
             val req = call.receive<AddHistoryRequest>()
             call.respond(HttpStatusCode.Created, mapOf("status" to "added", "title" to req.title))
+        }
+
+        delete("/history", {
+            tags = listOf("Music")
+            request { body<DeleteHistoryRequest>() }
+            response {
+                HttpStatusCode.OK to { description = "Title deleted successfully" }
+                HttpStatusCode.NotFound to { description = "Title not found" }
+            }
+        }) {
+            val req = call.receive<DeleteHistoryRequest>()
+            val deleted = listOf("Song1", "Song2").contains(req.title)
+
+            if (deleted) {
+                call.respond(HttpStatusCode.OK, mapOf("status" to "deleted", "title" to req.title))
+            } else {
+                call.respond(HttpStatusCode.NotFound, mapOf("error" to "Title not found"))
+            }
         }
     }
 }
