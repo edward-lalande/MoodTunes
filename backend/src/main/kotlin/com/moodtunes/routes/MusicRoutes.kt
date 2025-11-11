@@ -7,6 +7,10 @@ import io.ktor.server.response.*
 import io.ktor.server.request.*
 import io.github.smiley4.ktorswaggerui.dsl.*
 import io.ktor.http.*
+import java.util.UUID
+import java.time.LocalDate
+
+val musicHistoryStorage = mutableListOf<MusicHistoryEntry>()
 
 fun Route.musicRoutes() {
 
@@ -14,56 +18,100 @@ fun Route.musicRoutes() {
 
         post("/mood", {
             tags = listOf("Music")
+            summary = "Generate a playlist based on a given mood"
+            description = "Takes a mood and returns a mock playlist that matches it."
             request { body<MoodRequest>() }
-            response { HttpStatusCode.OK to { body<MusicResponse>() } }
+            response {
+                HttpStatusCode.OK to {
+                    description = "A playlist matching the provided mood"
+                    body<MusicResponse>()
+                }
+            }
         }) {
             val mood = call.receive<MoodRequest>().mood
-            call.respond(
-                MusicResponse(
+
+            val playlist = listOf(
+                MusicDetailed(
+                    id = UUID.randomUUID().toString(),
                     title = "Mock Song",
                     artist = "Mock Artist",
                     albumCoverUrl = "https://placehold.co/300x300",
                     mood = mood,
                     spotifyUrl = "https://spotify.com/placehold"
+                ),
+                MusicDetailed(
+                    id = UUID.randomUUID().toString(),
+                    title = "Chill Vibes",
+                    artist = "Lofi Beats",
+                    albumCoverUrl = "https://placehold.co/300x300?text=Chill",
+                    mood = mood,
+                    spotifyUrl = "https://spotify.com/chill"
                 )
             )
+
+            call.respond(MusicResponse(playlist))
         }
 
         get("/history", {
             tags = listOf("Music")
-            response { HttpStatusCode.OK to { body<MusicHistoryResponse>() } }
+            summary = "Retrieve the user's listening history"
+            description = "Returns all previously added songs for the current user."
+            response {
+                HttpStatusCode.OK to {
+                    description = "A list of music history entries"
+                    body<MusicHistoryResponse>()
+                }
+            }
         }) {
-            val history = listOf(
-                MusicHistoryEntry("Song1", "Artist1", "happy", "2025-11-04"),
-                MusicHistoryEntry("Song2", "Artist2", "sad", "2025-11-03"),
-            )
-            call.respond(MusicHistoryResponse("mockUser", history))
+            val user = "mockUser"
+            call.respond(MusicHistoryResponse(user, musicHistoryStorage))
         }
 
         post("/history", {
             tags = listOf("Music")
+            summary = "Add a song to the user's history"
+            description = "Stores a new music entry with its mood and Spotify link."
             request { body<AddHistoryRequest>() }
-            response { HttpStatusCode.Created to { description = "History added" } }
+            response {
+                HttpStatusCode.Created to { description = "Song successfully added to history" }
+                HttpStatusCode.BadRequest to { description = "Invalid request body" }
+            }
         }) {
             val req = call.receive<AddHistoryRequest>()
-            call.respond(HttpStatusCode.Created, mapOf("status" to "added", "title" to req.title))
+
+            val newEntry = MusicHistoryEntry(
+                id = UUID.randomUUID().toString(),
+                title = req.title,
+                artist = req.artist,
+                mood = req.mood,
+                date = LocalDate.now().toString()
+            )
+
+            musicHistoryStorage.add(newEntry)
+
+            call.respond(
+                HttpStatusCode.Created,
+                mapOf("status" to "added", "id" to newEntry.id)
+            )
         }
 
         delete("/history", {
             tags = listOf("Music")
+            summary = "Delete a song from the user's history"
+            description = "Deletes a specific song from the history using its unique ID."
             request { body<DeleteHistoryRequest>() }
             response {
-                HttpStatusCode.OK to { description = "Title deleted successfully" }
-                HttpStatusCode.NotFound to { description = "Title not found" }
+                HttpStatusCode.OK to { description = "Song successfully deleted" }
+                HttpStatusCode.NotFound to { description = "Song ID not found" }
             }
         }) {
             val req = call.receive<DeleteHistoryRequest>()
-            val deleted = listOf("Song1", "Song2").contains(req.title)
+            val removed = musicHistoryStorage.removeIf { it.id == req.id }
 
-            if (deleted) {
-                call.respond(HttpStatusCode.OK, mapOf("status" to "deleted", "title" to req.title))
+            if (removed) {
+                call.respond(HttpStatusCode.OK, mapOf("status" to "deleted", "id" to req.id))
             } else {
-                call.respond(HttpStatusCode.NotFound, mapOf("error" to "Title not found"))
+                call.respond(HttpStatusCode.NotFound, mapOf("error" to "ID not found"))
             }
         }
     }
