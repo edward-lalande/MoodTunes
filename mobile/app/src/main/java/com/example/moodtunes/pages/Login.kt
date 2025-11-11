@@ -1,5 +1,7 @@
 package com.example.moodtunes.pages
 
+import Call
+import androidx.activity.result.launch
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -20,9 +22,11 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -34,13 +38,29 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import com.example.moodtunes.DataObject.UserData
 import com.example.moodtunes.R
 import com.example.moodtunes.components.MoodTunesTextField
 import com.example.moodtunes.components.MoodTunesButtonField
 import com.example.moodtunes.components.Background
+import kotlinx.coroutines.launch
+import retrofit2.Response
+
+val api = Call("http://192.168.200.176:3000/")
 
 @Composable
 fun LoginPage(navController: NavController) {
+    var user by remember { mutableStateOf<UserData?>(null) }
+
+    LaunchedEffect(Unit) {
+        try {
+            user = api.get<UserData>("login")
+        } catch (e: Exception){
+            user = null
+            println(e.toString())
+        }
+    }
+
     Background {
         Column(
             modifier = Modifier
@@ -54,7 +74,9 @@ fun LoginPage(navController: NavController) {
 
             Row(
                 verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp)
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp)
             ) {
                 HorizontalDivider(
                     Modifier.weight(1f),
@@ -76,7 +98,9 @@ fun LoginPage(navController: NavController) {
             SignInAndUpForm(
                 navController,
                 buttonText = "Sign in",
-                signUp = false
+                signUp = false,
+                userName = user?.email,
+                password = user?.password
             )
 
             HasAnAccountForm(
@@ -128,10 +152,22 @@ fun LoginSignUpHeader(subtitleText: String) {
 
 @Composable
 fun SpotifyButton() {
+    val scope = rememberCoroutineScope()
+    var resp by remember { mutableStateOf<Response<Unit>?>(null) }
+
     Button(
-        onClick = {},
+        onClick = {
+            scope.launch {
+                println("scope launched")
+                try {
+                    resp = api.post<Response<Unit>>("spotify", null)
+                } catch (e: Exception) {
+                    println("SpotifyErr: ${e.message}")
+                }
+            }
+        },
         colors = ButtonDefaults.buttonColors(
-            containerColor = Color(0xFF1DB954),
+            containerColor = if (resp?.isSuccessful == true) Color(0xFF1DB954) else Color.Red,
             contentColor = Color.White
         ),
         shape = MaterialTheme.shapes.medium,
@@ -151,7 +187,6 @@ fun SpotifyButton() {
                     .size(45.dp)
                     .padding(end = 12.dp)
             )
-
             Text(
                 text = "Continue with Spotify",
                 fontSize = 20.sp,
@@ -208,7 +243,13 @@ fun PasswordForm(
 }
 
 @Composable
-fun SignInAndUpForm(navController: NavController, buttonText: String, signUp: Boolean) {
+fun SignInAndUpForm(
+    navController: NavController,
+    buttonText: String,
+    signUp: Boolean,
+    userName: String? = null,
+    password: String? = null
+) {
     var usernameText by remember { mutableStateOf("") }
     var emailText by remember { mutableStateOf("") }
     var passwordText by remember { mutableStateOf("") }
@@ -218,7 +259,7 @@ fun SignInAndUpForm(navController: NavController, buttonText: String, signUp: Bo
         modifier = Modifier
             .fillMaxWidth()
             .padding(16.dp),
-        text = usernameText,
+        text = userName ?: usernameText,
         onTextChange = { newText -> usernameText = newText },
         outlineColor = Color(0xFF5B21B6),
         placeholder = "Username",
@@ -241,7 +282,7 @@ fun SignInAndUpForm(navController: NavController, buttonText: String, signUp: Bo
 
     PasswordForm(
         confirmedRequired = signUp,
-        passwordText = passwordText,
+        passwordText = password ?: passwordText,
         onPasswordChange = { newText -> passwordText = newText },
         confirmPasswordText = confirmPasswordText,
         onConfirmPasswordChange = { newText -> confirmPasswordText = newText }

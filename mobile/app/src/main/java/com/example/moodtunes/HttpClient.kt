@@ -10,7 +10,7 @@ object HttpClient {
 
     suspend inline fun <reified T> get(url: String): T? = request("GET", url)
 
-    suspend inline fun <reified T> post(url: String, body: Any): T? =
+    suspend inline fun <reified T> post(url: String, body: Any? = null): T? =
         request("POST", url, gson.toJson(body))
 
     suspend inline fun <reified T> request(method: String, url: String, jsonBody: String? = null): T? {
@@ -35,6 +35,8 @@ object HttpClient {
 class Call(val baseUrl: String) {
     suspend inline fun <reified T> get(path: String) =
         HttpClient.get<T>(baseUrl + path)
+    suspend inline fun <reified T> post(url: String, body: Any? = null) =
+        HttpClient.post<T>(url, body)
     suspend inline fun <reified T> request(
         method: String,
         url: String,

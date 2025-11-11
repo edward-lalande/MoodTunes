@@ -22,7 +22,9 @@ fun SignUpPage(navController: NavController) {
             SignInAndUpForm(
                 navController,
                 buttonText = "Sign Up",
-                signUp = true
+                signUp = true,
+                password = null,
+                userName = null
             )
 
             HasAnAccountForm(
