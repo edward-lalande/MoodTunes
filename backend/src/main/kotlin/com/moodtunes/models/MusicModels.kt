@@ -3,19 +3,24 @@ package com.moodtunes.models
 import kotlinx.serialization.Serializable
 
 @Serializable
-data class MoodRequest(val mood: String)
-
-@Serializable
-data class MusicResponse(
+data class MusicDetailed(
+    val id: String,
     val title: String,
     val artist: String,
-    val albumCoverUrl: String,
     val mood: String,
+    val albumCoverUrl: String,
     val spotifyUrl: String
 )
 
 @Serializable
+data class MoodRequest(val mood: String)
+
+@Serializable
+data class MusicResponse(val playlist: List<MusicDetailed>)
+
+@Serializable
 data class MusicHistoryEntry(
+    val id: String,
     val title: String,
     val artist: String,
     val mood: String,
@@ -40,6 +45,5 @@ data class AddHistoryRequest(
 @Serializable
 data class DeleteHistoryRequest(
     val token: String,
-    val title: String,
-    val artist: String
+    val id: String
 )
