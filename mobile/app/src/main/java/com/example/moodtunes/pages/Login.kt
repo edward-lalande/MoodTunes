@@ -1,7 +1,6 @@
 package com.example.moodtunes.pages
 
 import Call
-import androidx.activity.result.launch
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -22,7 +21,6 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -38,28 +36,18 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import com.example.moodtunes.DataObject.TokenResponse
 import com.example.moodtunes.DataObject.UserData
 import com.example.moodtunes.R
 import com.example.moodtunes.components.MoodTunesTextField
 import com.example.moodtunes.components.MoodTunesButtonField
 import com.example.moodtunes.components.Background
-import kotlinx.coroutines.launch
 import retrofit2.Response
 
-val api = Call("http://192.168.200.176:3000/")
 
 @Composable
 fun LoginPage(navController: NavController) {
     var user by remember { mutableStateOf<UserData?>(null) }
-
-    LaunchedEffect(Unit) {
-        try {
-            user = api.get<UserData>("login")
-        } catch (e: Exception){
-            user = null
-            println(e.toString())
-        }
-    }
 
     Background {
         Column(
@@ -152,22 +140,10 @@ fun LoginSignUpHeader(subtitleText: String) {
 
 @Composable
 fun SpotifyButton() {
-    val scope = rememberCoroutineScope()
-    var resp by remember { mutableStateOf<Response<Unit>?>(null) }
-
     Button(
-        onClick = {
-            scope.launch {
-                println("scope launched")
-                try {
-                    resp = api.post<Response<Unit>>("spotify", null)
-                } catch (e: Exception) {
-                    println("SpotifyErr: ${e.message}")
-                }
-            }
-        },
+        onClick = { },
         colors = ButtonDefaults.buttonColors(
-            containerColor = if (resp?.isSuccessful == true) Color(0xFF1DB954) else Color.Red,
+            containerColor = Color(0xFF1DB954),
             contentColor = Color.White
         ),
         shape = MaterialTheme.shapes.medium,
@@ -254,6 +230,8 @@ fun SignInAndUpForm(
     var emailText by remember { mutableStateOf("") }
     var passwordText by remember { mutableStateOf("") }
     var confirmPasswordText by remember { mutableStateOf("") }
+    val scope = rememberCoroutineScope()
+    var resp by remember { mutableStateOf<Response<TokenResponse>?>(null) }
 
     MoodTunesTextField(
         modifier = Modifier
@@ -294,7 +272,7 @@ fun SignInAndUpForm(
 
     MoodTunesButtonField(
         onClick = {
-            navController.navigate("select-mood")
+            navController.navigate("select-mood") // A RETIRER BIEN SUR
         },
         modifier = Modifier
             .fillMaxWidth()

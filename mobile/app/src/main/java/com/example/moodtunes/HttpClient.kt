@@ -36,10 +36,12 @@ class Call(val baseUrl: String) {
     suspend inline fun <reified T> get(path: String) =
         HttpClient.get<T>(baseUrl + path)
     suspend inline fun <reified T> post(url: String, body: Any? = null) =
-        HttpClient.post<T>(url, body)
+        HttpClient.post<T>(if (url.startsWith("http://") || url.startsWith("https://")) url else baseUrl + url, body)
     suspend inline fun <reified T> request(
         method: String,
         url: String,
         jsonBody: String? = null
-    ) =  HttpClient.request<T>(method, url, jsonBody)
+    ) =  HttpClient.request<T>(method, if (url.startsWith("http://") || url.startsWith("https://")) url else baseUrl + url, jsonBody)
 }
+
+val api = Call("http://192.168.200.176:8080/")
