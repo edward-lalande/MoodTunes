@@ -4,6 +4,7 @@ import com.moodtunes.auth.JwtConfig
 import com.moodtunes.database.RefreshTokens
 import com.moodtunes.database.Users
 import com.moodtunes.models.*
+import com.moodtunes.utils.*
 import io.ktor.server.routing.*
 import io.ktor.server.application.*
 import io.ktor.server.response.*
@@ -129,17 +130,8 @@ fun Route.userRoutes() {
                 HttpStatusCode.NotFound to { description = "User not found" }
             }
         }) {
-            val token = call.request.headers["Authorization"]
-                ?.removePrefix("Bearer ")
-                ?: return@get call.respond(HttpStatusCode.Unauthorized, "Missing token")
-
-            val userToken = transaction {
-                RefreshTokens
-                    .selectAll().where { RefreshTokens.id eq token }
-                    .singleOrNull()
-            } ?: return@get call.respond(HttpStatusCode.Unauthorized, "Invalid token")
-
-            val userId = userToken[RefreshTokens.userId]
+            val userId = getUserIdFromToken(call)
+                ?: return@get call.respond(HttpStatusCode.Unauthorized, "Invalid token")
 
             val user = transaction {
                 Users
@@ -159,53 +151,128 @@ fun Route.userRoutes() {
         patch("/username", {
             tags = listOf("User")
             summary = "Modify a specific username"
-            description = "Modify a specific user's username given its token."
+            description = "Modify the authenticated user's username."
             request { body<ModifyUserUsernameRequest>() }
             response {
-                HttpStatusCode.OK to { description = "User username modified successfully" }
+                HttpStatusCode.OK to { description = "Username updated successfully" }
+                HttpStatusCode.Unauthorized to { description = "Invalid or missing token" }
                 HttpStatusCode.NotFound to { description = "User not found" }
             }
         }) {
-            // ça patch fort
+            val userId = getUserIdFromToken(call)
+                ?: return@patch call.respond(HttpStatusCode.Unauthorized, "Invalid token")
+
+            val body = call.receive<ModifyUserUsernameRequest>()
+
+            val ok = updateUser(userId) {
+                it[username] = body.newUsername
+            }
+
+            if (!ok) {
+                return@patch call.respond(HttpStatusCode.NotFound, "User not found")
+            }
+
+            call.respond(HttpStatusCode.OK, "Username updated successfully")
         }
 
         patch("/email", {
             tags = listOf("User")
             summary = "Modify a specific email"
-            description = "Modify a specific user's email given its token."
+            description = "Modify the authenticated user's email."
             request { body<ModifyUserEmailRequest>() }
             response {
-                HttpStatusCode.OK to { description = "User email modified successfully" }
+                HttpStatusCode.OK to { description = "Email updated successfully" }
+                HttpStatusCode.Unauthorized to { description = "Invalid or missing token" }
                 HttpStatusCode.NotFound to { description = "User not found" }
             }
         }) {
-            // ça patch fort
+            val userId = getUserIdFromToken(call)
+                ?: return@patch call.respond(HttpStatusCode.Unauthorized, "Invalid token")
+
+            val body = call.receive<ModifyUserEmailRequest>()
+
+            val ok = updateUser(userId) {
+                it[email] = body.newEmail
+            }
+
+            if (!ok) {
+                return@patch call.respond(HttpStatusCode.NotFound, "User not found")
+            }
+
+            call.respond(HttpStatusCode.OK, "Email updated successfully")
         }
+
 
         patch("/password", {
             tags = listOf("User")
             summary = "Modify a specific password"
-            description = "Modify a specific user's password given its token."
+            description = "Modify the authenticated user's password."
             request { body<ModifyUserPasswordRequest>() }
             response {
-                HttpStatusCode.OK to { description = "User password modified successfully" }
+                HttpStatusCode.OK to { description = "Password updated successfully" }
+                HttpStatusCode.Unauthorized to { description = "Invalid or missing token" }
                 HttpStatusCode.NotFound to { description = "User not found" }
             }
         }) {
-            // ça patch fort
+            val userId = getUserIdFromToken(call)
+                ?: return@patch call.respond(HttpStatusCode.Unauthorized, "Invalid token")
+
+            val body = call.receive<ModifyUserPasswordRequest>()
+
+            val hashed = body.newPassword.hashCode().toString()
+
+            val ok = updateUser(userId) {
+                it[passwordHash] = hashed
+            }
+
+            if (!ok) {
+                return@patch call.respond(HttpStatusCode.NotFound, "User not found")
+            }
+
+            call.respond(HttpStatusCode.OK, "Password updated successfully")
         }
 
         delete("", {
             tags = listOf("User")
-            summary = "Delete a specific user"
-            description = "Delete a specific user given it's token."
-            request { body<DeleteUserRequest>() }
+            summary = "Delete the authenticated user"
+            description = "Deletes the user associated with the provided token."
+
             response {
                 HttpStatusCode.OK to { description = "User deleted successfully" }
+                HttpStatusCode.Unauthorized to { description = "Invalid or missing token" }
                 HttpStatusCode.NotFound to { description = "User not found" }
             }
         }) {
-            // ça delete fort
+            val token = call.request.headers["Authorization"]
+                ?.removePrefix("Bearer ")
+                ?.trim()
+                ?: return@delete call.respond(HttpStatusCode.Unauthorized, "Missing token")
+
+            val refreshTokenRow = transaction {
+                RefreshTokens
+                    .selectAll().where { RefreshTokens.id eq token }
+                    .singleOrNull()
+            } ?: return@delete call.respond(HttpStatusCode.Unauthorized, "Invalid token")
+
+            val userId = refreshTokenRow[RefreshTokens.userId]
+
+            val exists = transaction {
+                Users.selectAll().where { Users.id eq userId }.empty().not()
+            }
+
+            if (!exists) {
+                return@delete call.respond(HttpStatusCode.NotFound, "User not found")
+            }
+
+            transaction {
+                RefreshTokens.deleteWhere { RefreshTokens.userId eq userId }
+            }
+            transaction {
+                Users.deleteWhere { Users.id eq userId }
+            }
+
+            call.respond(HttpStatusCode.OK, "User deleted successfully")
         }
+
     }
 }
