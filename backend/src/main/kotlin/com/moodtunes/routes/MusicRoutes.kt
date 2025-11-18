@@ -19,7 +19,7 @@ fun Route.musicRoutes() {
         post("/mood", {
             tags = listOf("Music")
             summary = "Generate a playlist based on a given mood"
-            description = "Takes a mood and returns a mock playlist that matches it."
+            description = "Takes a mood and returns either a playlist URL or a detailed playlist based on the 'kind' field."
             request { body<MoodRequest>() }
             response {
                 HttpStatusCode.OK to {
@@ -28,7 +28,7 @@ fun Route.musicRoutes() {
                 }
             }
         }) {
-            val mood = call.receive<MoodRequest>().mood
+            val req = call.receive<MoodRequest>()
 
             val playlist = listOf(
                 MusicDetailed(
@@ -36,7 +36,7 @@ fun Route.musicRoutes() {
                     title = "Mock Song",
                     artist = "Mock Artist",
                     albumCoverUrl = "https://placehold.co/300x300",
-                    mood = mood,
+                    mood = req.mood,
                     spotifyUrl = "https://spotify.com/placehold"
                 ),
                 MusicDetailed(
@@ -44,13 +44,18 @@ fun Route.musicRoutes() {
                     title = "Chill Vibes",
                     artist = "Lofi Beats",
                     albumCoverUrl = "https://placehold.co/300x300?text=Chill",
-                    mood = mood,
+                    mood = req.mood,
                     spotifyUrl = "https://spotify.com/chill"
                 )
             )
 
-            call.respond(MusicResponse(playlist))
+            if (req.kind == "playlist") {
+                call.respond(MusicResponse(playlistUrl = "https://open.spotify.com/playlist/mock-${req.mood}"))
+            } else {
+                call.respond(MusicResponse(playlist = playlist))
+            }
         }
+
 
         get("/history", {
             tags = listOf("Music")
