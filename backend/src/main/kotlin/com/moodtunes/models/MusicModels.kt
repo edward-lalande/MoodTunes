@@ -13,7 +13,10 @@ data class MusicDetailed(
 )
 
 @Serializable
-data class MoodRequest(val mood: String)
+data class MoodRequest(
+    val mood: String,
+    val kind: String // playlist/track/album
+)
 
 @Serializable
 data class MusicResponse(val playlist: List<MusicDetailed>)
