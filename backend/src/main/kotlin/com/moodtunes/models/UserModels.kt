@@ -10,6 +10,17 @@ data class CreateUserRequest(
 )
 
 @Serializable
+data class LoginUserRequest(
+    val username: String,
+    val password: String,
+)
+
+@Serializable
+data class LogoutUserRequest(
+    val token: String,
+)
+
+@Serializable
 data class GetUserRequest(
     val token: String,
 )
@@ -39,6 +50,11 @@ data class DeleteUserRequest(
 
 @Serializable
 data class CreateUserResponse(
+    val token: String,
+)
+
+@Serializable
+data class LoginUserResponse(
     val token: String,
 )
 
