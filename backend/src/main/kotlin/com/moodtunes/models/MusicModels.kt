@@ -9,7 +9,8 @@ data class MusicDetailed(
     val artist: String,
     val mood: String,
     val albumCoverUrl: String,
-    val spotifyUrl: String
+    val spotifyUrl: String,
+    val releaseDate: String
 )
 
 @Serializable
