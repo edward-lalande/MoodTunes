@@ -36,10 +36,15 @@ fun Route.userRoutes() {
             val req = call.receive<CreateUserRequest>()
 
             val user = transaction {
-                Users.selectAll().where { Users.email eq req.email }
+                val tempUser = Users.selectAll().where { Users.email eq req.email }
+
+                if (tempUser.empty()) {
+                    return@transaction null
+                }
+                return@transaction tempUser
             }
 
-            if (!user.empty()) {
+            if (user != null) {
                 return@post call.respond(HttpStatusCode.BadRequest, "User already exists")
             }
 
@@ -50,7 +55,7 @@ fun Route.userRoutes() {
                     it[username] = req.username
                     it[email] = req.email
                     it[passwordHash] = hash
-                    it[createdAt] = "LocalDateTime.now().toString()"
+                    it[createdAt] = LocalDateTime.now().toString()
                 }
             }
 
