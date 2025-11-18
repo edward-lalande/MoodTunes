@@ -1,11 +1,18 @@
 package com.moodtunes.routes
 
+import com.moodtunes.auth.JwtConfig
+import com.moodtunes.database.Users
 import com.moodtunes.models.*
 import io.ktor.server.routing.*
 import io.ktor.server.application.*
 import io.ktor.server.response.*
 import io.github.smiley4.ktorswaggerui.dsl.*
 import io.ktor.http.*
+import io.ktor.server.request.receive
+import org.jetbrains.exposed.sql.insert
+import org.jetbrains.exposed.sql.select
+import org.jetbrains.exposed.sql.selectAll
+import org.jetbrains.exposed.sql.transactions.transaction
 
 fun Route.userRoutes() {
 
@@ -24,11 +31,39 @@ fun Route.userRoutes() {
                 HttpStatusCode.BadRequest to { description = "Invalid request body" }
             }
         }) {
-            // user creation
+            val req = call.receive<CreateUserRequest>()
+
+            val user = transaction {
+                Users.selectAll().where { Users.email eq req.email }
+            }
+
+            if (!user.empty()) {
+                return@post call.respond(HttpStatusCode.BadRequest, "User already exists")
+            }
+
+            val hash = req.password.hashCode().toString()
+
+            transaction {
+                Users.insert {
+                    it[username] = req.username
+                    it[email] = req.email
+                    it[passwordHash] = hash
+                }
+            }
+
+            val newUser = transaction {
+                Users.selectAll().where { Users.email eq req.email }.singleOrNull()
+            }
+
+            if (newUser == null) {
+                return@post call.respond(HttpStatusCode.NotFound, "User couldn't be created")
+            }
+
+            val refreshToken = JwtConfig.createRefreshToken(newUser[Users.id])
 
             call.respond(
                 CreateUserResponse(
-                    token = "mockToken"
+                    token = refreshToken,
                 )
             )
         }
