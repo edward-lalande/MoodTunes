@@ -6,9 +6,6 @@ import io.ktor.server.application.*
 import io.ktor.server.response.*
 import io.github.smiley4.ktorswaggerui.dsl.*
 import io.ktor.http.*
-import io.ktor.server.request.receive
-import java.time.LocalDate
-import java.util.UUID
 
 fun Route.userRoutes() {
 
@@ -34,6 +31,44 @@ fun Route.userRoutes() {
                     token = "mockToken"
                 )
             )
+        }
+
+        get("login", {
+            tags = listOf("User")
+            summary = "Login to a user"
+            description = "Login to a specific user using an username and a password and retrieve a token"
+            request { body<LoginUserRequest>() }
+            response {
+                HttpStatusCode.OK to {
+                    description = "Successfully logged in"
+                    body<LoginUserResponse>()
+                }
+                HttpStatusCode.NotFound to { description = "User not found" }
+            }
+        }) {
+
+            //login
+
+            call.respond(
+                LoginUserResponse(
+                    token = "mockToken"
+                )
+            )
+        }
+
+        post("logout", {
+            tags = listOf("User")
+            summary = "Logout of a user"
+            description = "Logout of a specific user using a token"
+            request { body<LogoutUserRequest>() }
+            response {
+                HttpStatusCode.OK to {
+                    description = "Successfully logged in"
+                }
+                HttpStatusCode.NotFound to { description = "User not found" }
+            }
+        }) {
+            // logout
         }
 
         get("", {
