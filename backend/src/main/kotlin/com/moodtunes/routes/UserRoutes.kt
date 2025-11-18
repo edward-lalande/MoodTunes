@@ -10,6 +10,7 @@ import io.ktor.server.application.*
 import io.ktor.server.response.*
 import io.github.smiley4.ktorswaggerui.dsl.*
 import io.ktor.http.*
+import io.ktor.server.auth.*
 import io.ktor.server.request.receive
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
@@ -116,163 +117,167 @@ fun Route.userRoutes() {
             // logout
         }
 
-        get("", {
-            tags = listOf("User")
-            securitySchemeName = "bearerAuth"
-            summary = "Get user data"
-            description = "Returns basic information about the current user."
-            response {
-                HttpStatusCode.OK to {
-                    description = "User data retrieved successfully"
-                    body<GetUserResponse>()
+        authenticate("auth-bearer") {
+            get("", {
+                tags = listOf("User")
+                securitySchemeName = "bearerAuth"
+                summary = "Get user data"
+                description = "Returns basic information about the current user."
+                response {
+                    HttpStatusCode.OK to {
+                        description = "User data retrieved successfully"
+                        body<GetUserResponse>()
+                    }
+                    HttpStatusCode.Unauthorized to {
+                        description = "Missing or invalid token (handled automatically by Bearer auth)"
+                    }
+                    HttpStatusCode.NotFound to {
+                        description = "User not found. The token belongs to a deleted user."
+                    }
                 }
-                HttpStatusCode.Unauthorized to { description = "Invalid or missing token" }
-                HttpStatusCode.NotFound to { description = "User not found" }
-            }
-        }) {
-            val userId = getUserIdFromToken(call)
-                ?: return@get call.respond(HttpStatusCode.Unauthorized, "Invalid token")
+            }) {
+                val userId = call.principal<UserIdPrincipal>()!!.name.toInt()
 
-            val user = transaction {
-                Users
-                    .selectAll().where { Users.id eq userId }
-                    .singleOrNull()
-            } ?: return@get call.respond(HttpStatusCode.NotFound, "User not found")
+                val user = transaction {
+                    Users.selectAll().where { Users.id eq userId }.singleOrNull()
+                } ?: return@get call.respond(HttpStatusCode.NotFound, "User not found")
 
-            call.respond(
-                GetUserResponse(
-                    username = user[Users.username],
-                    email = user[Users.email],
-                    createdAt = user[Users.createdAt]
+                call.respond(
+                    GetUserResponse(
+                        username = user[Users.username],
+                        email = user[Users.email],
+                        createdAt = user[Users.createdAt]
+                    )
                 )
-            )
+            }
         }
 
-        patch("/username", {
-            tags = listOf("User")
-            summary = "Modify a specific username"
-            description = "Modify the authenticated user's username."
-            request { body<ModifyUserUsernameRequest>() }
-            response {
-                HttpStatusCode.OK to { description = "Username updated successfully" }
-                HttpStatusCode.Unauthorized to { description = "Invalid or missing token" }
-                HttpStatusCode.NotFound to { description = "User not found" }
+        authenticate("auth-bearer") {
+            patch("/username", {
+                tags = listOf("User")
+                securitySchemeName = "bearerAuth"
+                summary = "Modify a specific username"
+                description = "Modify the authenticated user's username."
+                request { body<ModifyUserUsernameRequest>() }
+                response {
+                    HttpStatusCode.OK to { description = "Username updated successfully" }
+                    HttpStatusCode.Unauthorized to {
+                        description = "Missing or invalid token (handled automatically by Bearer auth)"
+                    }
+                    HttpStatusCode.NotFound to {
+                        description = "User not found. The token belongs to a deleted user."
+                    }
+                }
+            }) {
+                val userId = call.principal<UserIdPrincipal>()!!.name.toInt()
+
+                val body = call.receive<ModifyUserUsernameRequest>()
+
+                val ok = updateUser(userId) {
+                    it[username] = body.newUsername
+                }
+
+                if (!ok) {
+                    return@patch call.respond(HttpStatusCode.NotFound, "User not found")
+                }
+
+                call.respond(HttpStatusCode.OK, "Username updated successfully")
             }
-        }) {
-            val userId = getUserIdFromToken(call)
-                ?: return@patch call.respond(HttpStatusCode.Unauthorized, "Invalid token")
-
-            val body = call.receive<ModifyUserUsernameRequest>()
-
-            val ok = updateUser(userId) {
-                it[username] = body.newUsername
-            }
-
-            if (!ok) {
-                return@patch call.respond(HttpStatusCode.NotFound, "User not found")
-            }
-
-            call.respond(HttpStatusCode.OK, "Username updated successfully")
         }
 
-        patch("/email", {
-            tags = listOf("User")
-            summary = "Modify a specific email"
-            description = "Modify the authenticated user's email."
-            request { body<ModifyUserEmailRequest>() }
-            response {
-                HttpStatusCode.OK to { description = "Email updated successfully" }
-                HttpStatusCode.Unauthorized to { description = "Invalid or missing token" }
-                HttpStatusCode.NotFound to { description = "User not found" }
+        authenticate("auth-bearer") {
+            patch("/email", {
+                tags = listOf("User")
+                securitySchemeName = "bearerAuth"
+                summary = "Modify a specific email"
+                description = "Modify the authenticated user's email."
+                request { body<ModifyUserEmailRequest>() }
+                response {
+                    HttpStatusCode.OK to { description = "Email updated successfully" }
+                    HttpStatusCode.Unauthorized to {
+                        description = "Missing or invalid token (handled automatically by Bearer auth)"
+                    }
+                    HttpStatusCode.NotFound to {
+                        description = "User not found. The token belongs to a deleted user."
+                    }
+                }
+            }) {
+                val userId = call.principal<UserIdPrincipal>()!!.name.toInt()
+
+                val body = call.receive<ModifyUserEmailRequest>()
+
+                val ok = updateUser(userId) {
+                    it[email] = body.newEmail
+                }
+
+                if (!ok) {
+                    return@patch call.respond(HttpStatusCode.NotFound, "User not found")
+                }
+
+                call.respond(HttpStatusCode.OK, "Email updated successfully")
             }
-        }) {
-            val userId = getUserIdFromToken(call)
-                ?: return@patch call.respond(HttpStatusCode.Unauthorized, "Invalid token")
-
-            val body = call.receive<ModifyUserEmailRequest>()
-
-            val ok = updateUser(userId) {
-                it[email] = body.newEmail
-            }
-
-            if (!ok) {
-                return@patch call.respond(HttpStatusCode.NotFound, "User not found")
-            }
-
-            call.respond(HttpStatusCode.OK, "Email updated successfully")
         }
 
 
-        patch("/password", {
-            tags = listOf("User")
-            summary = "Modify a specific password"
-            description = "Modify the authenticated user's password."
-            request { body<ModifyUserPasswordRequest>() }
-            response {
-                HttpStatusCode.OK to { description = "Password updated successfully" }
-                HttpStatusCode.Unauthorized to { description = "Invalid or missing token" }
-                HttpStatusCode.NotFound to { description = "User not found" }
+        authenticate("auth-bearer") {
+            patch("/password", {
+                tags = listOf("User")
+                securitySchemeName = "bearerAuth"
+                summary = "Modify a specific password"
+                description = "Modify the authenticated user's password."
+                request { body<ModifyUserPasswordRequest>() }
+                response {
+                    HttpStatusCode.OK to { description = "Password updated successfully" }
+                    HttpStatusCode.Unauthorized to {
+                        description = "Missing or invalid token (handled automatically by Bearer auth)"
+                    }
+                    HttpStatusCode.NotFound to {
+                        description = "User not found. The token belongs to a deleted user."
+                    }
+                }
+            }) {
+                val userId = call.principal<UserIdPrincipal>()!!.name.toInt()
+
+                val body = call.receive<ModifyUserPasswordRequest>()
+
+                val hashed = body.newPassword.hashCode().toString()
+
+                val ok = updateUser(userId) {
+                    it[passwordHash] = hashed
+                }
+
+                if (!ok) {
+                    return@patch call.respond(HttpStatusCode.NotFound, "User not found")
+                }
+
+                call.respond(HttpStatusCode.OK, "Password updated successfully")
             }
-        }) {
-            val userId = getUserIdFromToken(call)
-                ?: return@patch call.respond(HttpStatusCode.Unauthorized, "Invalid token")
-
-            val body = call.receive<ModifyUserPasswordRequest>()
-
-            val hashed = body.newPassword.hashCode().toString()
-
-            val ok = updateUser(userId) {
-                it[passwordHash] = hashed
-            }
-
-            if (!ok) {
-                return@patch call.respond(HttpStatusCode.NotFound, "User not found")
-            }
-
-            call.respond(HttpStatusCode.OK, "Password updated successfully")
         }
 
-        delete("", {
-            tags = listOf("User")
-            summary = "Delete the authenticated user"
-            description = "Deletes the user associated with the provided token."
+        authenticate("auth-bearer") {
+            delete("", {
+                tags = listOf("User")
+                securitySchemeName = "bearerAuth"
+                summary = "Delete the authenticated user"
+                description = "Deletes the user associated with the provided token."
 
-            response {
-                HttpStatusCode.OK to { description = "User deleted successfully" }
-                HttpStatusCode.Unauthorized to { description = "Invalid or missing token" }
-                HttpStatusCode.NotFound to { description = "User not found" }
+                response {
+                    HttpStatusCode.OK to { description = "User deleted successfully" }
+                    HttpStatusCode.Unauthorized to {
+                        description = "Missing or invalid token (handled automatically by Bearer auth)"
+                    }
+                    HttpStatusCode.NotFound to {
+                        description = "User not found. The token belongs to a deleted user."
+                    }
+                }
+            }) {
+                val userId = call.principal<UserIdPrincipal>()!!.name.toInt()
+
+                transaction { RefreshTokens.deleteWhere { RefreshTokens.userId eq userId } }
+                transaction { Users.deleteWhere { Users.id eq userId } }
+
+                call.respond(HttpStatusCode.OK, "User deleted")
             }
-        }) {
-            val token = call.request.headers["Authorization"]
-                ?.removePrefix("Bearer ")
-                ?.trim()
-                ?: return@delete call.respond(HttpStatusCode.Unauthorized, "Missing token")
-
-            val refreshTokenRow = transaction {
-                RefreshTokens
-                    .selectAll().where { RefreshTokens.id eq token }
-                    .singleOrNull()
-            } ?: return@delete call.respond(HttpStatusCode.Unauthorized, "Invalid token")
-
-            val userId = refreshTokenRow[RefreshTokens.userId]
-
-            val exists = transaction {
-                Users.selectAll().where { Users.id eq userId }.empty().not()
-            }
-
-            if (!exists) {
-                return@delete call.respond(HttpStatusCode.NotFound, "User not found")
-            }
-
-            transaction {
-                RefreshTokens.deleteWhere { RefreshTokens.userId eq userId }
-            }
-            transaction {
-                Users.deleteWhere { Users.id eq userId }
-            }
-
-            call.respond(HttpStatusCode.OK, "User deleted successfully")
         }
-
     }
 }
