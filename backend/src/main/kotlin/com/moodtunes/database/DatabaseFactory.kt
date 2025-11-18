@@ -10,11 +10,12 @@ object DatabaseFactory {
             url = "jdbc:postgresql://localhost:5432/moodtunes",
             driver = "org.postgresql.Driver",
             user = "postgres",
-            password = "password"
+            password = "password" // woopsie
         )
 
         transaction {
             SchemaUtils.create(Users)
+            SchemaUtils.create(RefreshTokens)
         }
     }
 }
