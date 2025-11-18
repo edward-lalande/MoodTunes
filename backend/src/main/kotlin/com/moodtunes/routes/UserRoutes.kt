@@ -36,7 +36,7 @@ fun Route.userRoutes() {
             )
         }
 
-        get("/", {
+        get("", {
             tags = listOf("User")
             summary = "Get user data"
             description = "Returns basic information about the current user."
@@ -98,7 +98,7 @@ fun Route.userRoutes() {
             // ça patch fort
         }
 
-        delete("/", {
+        delete("", {
             tags = listOf("User")
             summary = "Delete a specific user"
             description = "Delete a specific user given it's token."
