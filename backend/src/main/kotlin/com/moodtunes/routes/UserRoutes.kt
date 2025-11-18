@@ -10,9 +10,8 @@ import io.ktor.server.response.*
 import io.github.smiley4.ktorswaggerui.dsl.*
 import io.ktor.http.*
 import io.ktor.server.request.receive
-import org.jetbrains.exposed.sql.and
-import org.jetbrains.exposed.sql.insert
-import org.jetbrains.exposed.sql.selectAll
+import org.jetbrains.exposed.sql.*
+import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import org.jetbrains.exposed.sql.transactions.transaction
 import java.time.LocalDateTime
 
@@ -35,16 +34,9 @@ fun Route.userRoutes() {
         }) {
             val req = call.receive<CreateUserRequest>()
 
-            val user = transaction {
-                val tempUser = Users.selectAll().where { Users.email eq req.email }
-
-                if (tempUser.empty()) {
-                    return@transaction null
-                }
-                return@transaction tempUser
-            }
-
-            if (user != null) {
+            transaction {
+                Users.selectAll().where { Users.email eq req.email }.singleOrNull()
+            } ?.let {
                 return@post call.respond(HttpStatusCode.BadRequest, "User already exists")
             }
 
@@ -61,22 +53,19 @@ fun Route.userRoutes() {
 
             val userToken = transaction {
                 Users.selectAll().where { Users.email eq req.email }.singleOrNull()
-            }
-
-            if (userToken == null) {
-                return@post call.respond(HttpStatusCode.NotFound, "User couldn't be created")
-            }
+            } ?: return@post call.respond(HttpStatusCode.BadRequest, "User couldn't be created")
 
             val refreshToken = JwtConfig.createRefreshToken(userToken[Users.id])
 
             call.respond(
+                HttpStatusCode.Created,
                 CreateUserResponse(
                     token = refreshToken,
                 )
             )
         }
 
-        get("login", {
+        post("login", {
             tags = listOf("User")
             summary = "Login to a user"
             description = "Login to a specific user using an username and a password and retrieve a token"
@@ -98,19 +87,11 @@ fun Route.userRoutes() {
                     (Users.username eq req.username) and
                     (Users.passwordHash eq passwordHash)
                 }.singleOrNull()
-            }
-
-            if (user == null) {
-                return@get call.respond(HttpStatusCode.NotFound, "Invalid credentials")
-            }
+            } ?: return@post call.respond(HttpStatusCode.NotFound, "Invalid credentials")
 
             val token = transaction {
                 RefreshTokens.selectAll().where { RefreshTokens.userId eq user[Users.id] }.singleOrNull()
-            }
-
-            if (token == null) {
-                return@get call.respond(HttpStatusCode.NotFound, "Internal error")
-            }
+            } ?: return@post call.respond(HttpStatusCode.NotFound, "Internal error")
 
             call.respond(
                 LoginUserResponse(
@@ -136,34 +117,35 @@ fun Route.userRoutes() {
 
         get("", {
             tags = listOf("User")
+            securitySchemeName = "bearerAuth"
             summary = "Get user data"
             description = "Returns basic information about the current user."
-            request { body<GetUserRequest>() }
             response {
                 HttpStatusCode.OK to {
                     description = "User data retrieved successfully"
                     body<GetUserResponse>()
                 }
+                HttpStatusCode.Unauthorized to { description = "Invalid or missing token" }
                 HttpStatusCode.NotFound to { description = "User not found" }
             }
         }) {
-            val req = call.receive<GetUserRequest>()
+            val token = call.request.headers["Authorization"]
+                ?.removePrefix("Bearer ")
+                ?: return@get call.respond(HttpStatusCode.Unauthorized, "Missing token")
 
             val userToken = transaction {
-                RefreshTokens.selectAll().where { RefreshTokens.id eq req.token }.singleOrNull()
-            }
+                RefreshTokens
+                    .selectAll().where { RefreshTokens.id eq token }
+                    .singleOrNull()
+            } ?: return@get call.respond(HttpStatusCode.Unauthorized, "Invalid token")
 
-            if (userToken == null) {
-                return@get call.respond(HttpStatusCode.NotFound, "Invalid token")
-            }
+            val userId = userToken[RefreshTokens.userId]
 
             val user = transaction {
-                Users.selectAll().where { Users.id eq userToken[RefreshTokens.userId] }.singleOrNull()
-            }
-
-            if (user == null) {
-                return@get call.respond(HttpStatusCode.NotFound, "Internal error")
-            }
+                Users
+                    .selectAll().where { Users.id eq userId }
+                    .singleOrNull()
+            } ?: return@get call.respond(HttpStatusCode.NotFound, "User not found")
 
             call.respond(
                 GetUserResponse(
@@ -173,7 +155,6 @@ fun Route.userRoutes() {
                 )
             )
         }
-
 
         patch("/username", {
             tags = listOf("User")
