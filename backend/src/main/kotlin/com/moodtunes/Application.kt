@@ -1,5 +1,6 @@
 package com.moodtunes
 
+import com.moodtunes.database.DatabaseFactory
 import com.moodtunes.routes.authRoutes
 import com.moodtunes.routes.musicRoutes
 import com.moodtunes.routes.userRoutes
@@ -15,6 +16,7 @@ import io.github.smiley4.ktorswaggerui.*
 
 fun main() {
     embeddedServer(Netty, port = 8080, host = "0.0.0.0") {
+        DatabaseFactory.init()
         module()
     }.start(wait = true)
 }
