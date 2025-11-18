@@ -37,7 +37,8 @@ fun Route.musicRoutes() {
                     artist = "Mock Artist",
                     albumCoverUrl = "https://placehold.co/300x300",
                     mood = req.mood,
-                    spotifyUrl = "https://spotify.com/placehold"
+                    spotifyUrl = "https://spotify.com/placehold",
+                    releaseDate = "2004-08-06"
                 ),
                 MusicDetailed(
                     id = UUID.randomUUID().toString(),
@@ -45,7 +46,8 @@ fun Route.musicRoutes() {
                     artist = "Lofi Beats",
                     albumCoverUrl = "https://placehold.co/300x300?text=Chill",
                     mood = req.mood,
-                    spotifyUrl = "https://spotify.com/chill"
+                    spotifyUrl = "https://spotify.com/chill",
+                    releaseDate = "2004-08-06"
                 )
             )
 
