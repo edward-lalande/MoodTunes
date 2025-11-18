@@ -1,6 +1,7 @@
 package com.moodtunes.routes
 
 import com.moodtunes.auth.JwtConfig
+import com.moodtunes.database.RefreshTokens
 import com.moodtunes.database.Users
 import com.moodtunes.models.*
 import io.ktor.server.routing.*
@@ -9,10 +10,11 @@ import io.ktor.server.response.*
 import io.github.smiley4.ktorswaggerui.dsl.*
 import io.ktor.http.*
 import io.ktor.server.request.receive
+import org.jetbrains.exposed.sql.and
 import org.jetbrains.exposed.sql.insert
-import org.jetbrains.exposed.sql.select
 import org.jetbrains.exposed.sql.selectAll
 import org.jetbrains.exposed.sql.transactions.transaction
+import java.time.LocalDateTime
 
 fun Route.userRoutes() {
 
@@ -48,18 +50,19 @@ fun Route.userRoutes() {
                     it[username] = req.username
                     it[email] = req.email
                     it[passwordHash] = hash
+                    it[createdAt] = "LocalDateTime.now().toString()"
                 }
             }
 
-            val newUser = transaction {
+            val userToken = transaction {
                 Users.selectAll().where { Users.email eq req.email }.singleOrNull()
             }
 
-            if (newUser == null) {
+            if (userToken == null) {
                 return@post call.respond(HttpStatusCode.NotFound, "User couldn't be created")
             }
 
-            val refreshToken = JwtConfig.createRefreshToken(newUser[Users.id])
+            val refreshToken = JwtConfig.createRefreshToken(userToken[Users.id])
 
             call.respond(
                 CreateUserResponse(
@@ -81,12 +84,32 @@ fun Route.userRoutes() {
                 HttpStatusCode.NotFound to { description = "User not found" }
             }
         }) {
+            val req = call.receive<LoginUserRequest>()
 
-            //login
+            val passwordHash = req.password.hashCode().toString()
+
+            val user = transaction {
+                Users.selectAll().where {
+                    (Users.username eq req.username) and
+                    (Users.passwordHash eq passwordHash)
+                }.singleOrNull()
+            }
+
+            if (user == null) {
+                return@get call.respond(HttpStatusCode.NotFound, "Invalid credentials")
+            }
+
+            val token = transaction {
+                RefreshTokens.selectAll().where { RefreshTokens.userId eq user[Users.id] }.singleOrNull()
+            }
+
+            if (token == null) {
+                return@get call.respond(HttpStatusCode.NotFound, "Internal error")
+            }
 
             call.respond(
                 LoginUserResponse(
-                    token = "mockToken"
+                    token = token[RefreshTokens.id]
                 )
             )
         }
@@ -119,11 +142,29 @@ fun Route.userRoutes() {
                 HttpStatusCode.NotFound to { description = "User not found" }
             }
         }) {
+            val req = call.receive<GetUserRequest>()
+
+            val userToken = transaction {
+                RefreshTokens.selectAll().where { RefreshTokens.id eq req.token }.singleOrNull()
+            }
+
+            if (userToken == null) {
+                return@get call.respond(HttpStatusCode.NotFound, "Invalid token")
+            }
+
+            val user = transaction {
+                Users.selectAll().where { Users.id eq userToken[RefreshTokens.userId] }.singleOrNull()
+            }
+
+            if (user == null) {
+                return@get call.respond(HttpStatusCode.NotFound, "Internal error")
+            }
+
             call.respond(
                 GetUserResponse(
-                    username = "mockUser",
-                    email = "mock@user.com",
-                    createdAt = "2025-01-01"
+                    username = user[Users.username],
+                    email = user[Users.email],
+                    createdAt = user[Users.createdAt]
                 )
             )
         }
