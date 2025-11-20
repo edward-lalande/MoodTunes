@@ -21,18 +21,10 @@ data class LogoutUserRequest(
 )
 
 @Serializable
-data class ModifyUserUsernameRequest(
-    val newUsername: String,
-)
-
-@Serializable
-data class ModifyUserEmailRequest(
-    val newEmail: String,
-)
-
-@Serializable
-data class ModifyUserPasswordRequest(
-    val newPassword: String,
+data class ModifyUserRequest(
+    val username: String? = null,
+    val email: String? = null,
+    val password: String? = null
 )
 
 @Serializable
