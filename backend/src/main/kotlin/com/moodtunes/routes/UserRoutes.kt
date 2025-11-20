@@ -153,14 +153,14 @@ fun Route.userRoutes() {
         }
 
         authenticate("auth-bearer") {
-            patch("/username", {
+            patch("", {
                 tags = listOf("User")
                 securitySchemeName = "bearerAuth"
-                summary = "Modify a specific username"
-                description = "Modify the authenticated user's username."
-                request { body<ModifyUserUsernameRequest>() }
+                summary = "Modify user information"
+                description = "Modify the authenticated user's username, email, or password. Only non-null fields are updated."
+                request { body<ModifyUserRequest>() }
                 response {
-                    HttpStatusCode.OK to { description = "Username updated successfully" }
+                    HttpStatusCode.OK to { description = "User updated successfully" }
                     HttpStatusCode.Unauthorized to {
                         description = "Missing or invalid token (handled automatically by Bearer auth)"
                     }
@@ -171,86 +171,22 @@ fun Route.userRoutes() {
             }) {
                 val userId = call.principal<UserIdPrincipal>()!!.name.toInt()
 
-                val body = call.receive<ModifyUserUsernameRequest>()
+                val body = call.receive<ModifyUserRequest>()
 
                 val ok = updateUser(userId) {
-                    it[username] = body.newUsername
+                    body.username?.let { newUsername -> it[username] = newUsername }
+                    body.email?.let { newEmail -> it[email] = newEmail }
+                    body.password?.let { newPassword ->
+                        val hashed = newPassword.hashCode().toString()
+                        it[passwordHash] = hashed
+                    }
                 }
 
                 if (!ok) {
                     return@patch call.respond(HttpStatusCode.NotFound, "User not found")
                 }
 
-                call.respond(HttpStatusCode.OK, "Username updated successfully")
-            }
-        }
-
-        authenticate("auth-bearer") {
-            patch("/email", {
-                tags = listOf("User")
-                securitySchemeName = "bearerAuth"
-                summary = "Modify a specific email"
-                description = "Modify the authenticated user's email."
-                request { body<ModifyUserEmailRequest>() }
-                response {
-                    HttpStatusCode.OK to { description = "Email updated successfully" }
-                    HttpStatusCode.Unauthorized to {
-                        description = "Missing or invalid token (handled automatically by Bearer auth)"
-                    }
-                    HttpStatusCode.NotFound to {
-                        description = "User not found. The token belongs to a deleted user."
-                    }
-                }
-            }) {
-                val userId = call.principal<UserIdPrincipal>()!!.name.toInt()
-
-                val body = call.receive<ModifyUserEmailRequest>()
-
-                val ok = updateUser(userId) {
-                    it[email] = body.newEmail
-                }
-
-                if (!ok) {
-                    return@patch call.respond(HttpStatusCode.NotFound, "User not found")
-                }
-
-                call.respond(HttpStatusCode.OK, "Email updated successfully")
-            }
-        }
-
-
-        authenticate("auth-bearer") {
-            patch("/password", {
-                tags = listOf("User")
-                securitySchemeName = "bearerAuth"
-                summary = "Modify a specific password"
-                description = "Modify the authenticated user's password."
-                request { body<ModifyUserPasswordRequest>() }
-                response {
-                    HttpStatusCode.OK to { description = "Password updated successfully" }
-                    HttpStatusCode.Unauthorized to {
-                        description = "Missing or invalid token (handled automatically by Bearer auth)"
-                    }
-                    HttpStatusCode.NotFound to {
-                        description = "User not found. The token belongs to a deleted user."
-                    }
-                }
-            }) {
-                val userId = call.principal<UserIdPrincipal>()!!.name.toInt()
-
-                val body = call.receive<ModifyUserPasswordRequest>()
-
-                val hashed = body.newPassword.hashCode().toString()
-
-                val ok = updateUser(userId) {
-                    it[passwordHash] = hashed
-                }
-
-                if (!ok) {
-                    return@patch call.respond(HttpStatusCode.NotFound, "User not found")
-                }
-
-                call.respond(HttpStatusCode.OK, "Password updated successfully")
+                call.respond(HttpStatusCode.OK, "User updated successfully")
             }
         }
 
