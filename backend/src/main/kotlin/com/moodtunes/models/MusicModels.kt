@@ -9,14 +9,21 @@ data class MusicDetailed(
     val artist: String,
     val mood: String,
     val albumCoverUrl: String,
-    val spotifyUrl: String
+    val spotifyUrl: String,
+    val releaseDate: String
 )
 
 @Serializable
-data class MoodRequest(val mood: String)
+data class MoodRequest(
+    val mood: String,
+    val kind: String // playlist/track/album
+)
 
 @Serializable
-data class MusicResponse(val playlist: List<MusicDetailed>)
+data class MusicResponse(
+    val playlist: List<MusicDetailed>? = null,
+    val playlistUrl: String? = null
+)
 
 @Serializable
 data class MusicHistoryEntry(
