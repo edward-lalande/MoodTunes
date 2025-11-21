@@ -40,8 +40,7 @@ object GeminiClient {
     private const val MODEL = "gemini-2.5-flash"
 
     private val apiKey: String by lazy {
-        System.getenv("GEMINI_API_KEY")
-            ?: dotenv()["GEMINI_API_KEY"]
+        com.moodtunes.ENV["GEMINI_API_KEY"]
             ?: error("GEMINI_API_KEY is missing")
     }
 
