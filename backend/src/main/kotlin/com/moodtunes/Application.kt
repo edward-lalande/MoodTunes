@@ -20,7 +20,12 @@ import org.jetbrains.exposed.sql.selectAll
 import org.jetbrains.exposed.sql.transactions.transaction
 import io.github.cdimascio.dotenv.dotenv
 
-val env = dotenv()
+val ENV = dotenv {
+    directory = "./"
+    filename = ".env"
+    ignoreIfMalformed = true
+    ignoreIfMissing = false
+}
 
 fun main() {
     embeddedServer(Netty, port = 8080, host = "0.0.0.0") {

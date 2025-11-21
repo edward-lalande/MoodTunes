@@ -40,12 +40,10 @@ object SpotifyClient {
     private val json = Json { ignoreUnknownKeys = true }
     private val http = HttpClient.newHttpClient()
 
-    private val clientId = System.getenv("SPOTIFY_CLIENT_ID")
-        ?: dotenv()["SPOTIFY_CLIENT_ID"]
+    private val clientId = com.moodtunes.ENV["SPOTIFY_CLIENT_ID"]
         ?: error("Missing SPOTIFY_CLIENT_ID")
 
-    private val clientSecret = System.getenv("SPOTIFY_CLIENT_SECRET")
-        ?: dotenv()["SPOTIFY_CLIENT_SECRET"]
+    private val clientSecret = com.moodtunes.ENV["SPOTIFY_CLIENT_SECRET"]
         ?: error("Missing SPOTIFY_CLIENT_SECRET")
 
     private var accessToken: String? = null
