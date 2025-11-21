@@ -1,8 +1,8 @@
 package com.moodtunes.routes
 
 import com.moodtunes.database.MusicHistory
-import com.moodtunes.database.Users
 import com.moodtunes.models.*
+import com.moodtunes.services.MusicService
 import io.ktor.server.routing.*
 import io.ktor.server.application.*
 import io.ktor.server.response.*
@@ -23,10 +23,10 @@ fun Route.musicRoutes() {
         authenticate("auth-bearer") {
             post("/mood", {
                 tags = listOf("Music")
-                summary = "Generate a playlist based on a given mood"
                 securitySchemeName = "bearerAuth"
+                summary = "Generate a playlist based on a given mood"
                 description =
-                    "Takes a mood and returns either a playlist URL or a detailed playlist based on the 'kind' field."
+                    "Uses Gemini to generate tracks matching the mood and fetches Spotify metadata. Automatically stores the results into the user's history."
                 request { body<MoodRequest>() }
                 response {
                     HttpStatusCode.OK to {
@@ -35,34 +35,36 @@ fun Route.musicRoutes() {
                     }
                 }
             }) {
+                val userId = call.principal<UserIdPrincipal>()!!.name.toInt()
                 val req = call.receive<MoodRequest>()
+                val mood = req.mood
 
-                val playlist = listOf(
-                    MusicDetailed(
-                        id = UUID.randomUUID().toString(),
-                        title = "Mock Song",
-                        artist = "Mock Artist",
-                        albumCoverUrl = "https://placehold.co/300x300",
-                        mood = req.mood,
-                        spotifyUrl = "https://spotify.com/placehold",
-                        releaseDate = "2004-08-06"
-                    ),
-                    MusicDetailed(
-                        id = UUID.randomUUID().toString(),
-                        title = "Chill Vibes",
-                        artist = "Lofi Beats",
-                        albumCoverUrl = "https://placehold.co/300x300?text=Chill",
-                        mood = req.mood,
-                        spotifyUrl = "https://spotify.com/chill",
-                        releaseDate = "2004-08-06"
+                val count = when (req.kind) {
+                    "playlist" -> 6
+                    "track" -> 1
+                    else -> 1
+                }
+
+                val playlist = MusicService.generatePlaylist(mood, count)
+
+                transaction {
+                    playlist.forEach { track ->
+                        MusicHistory.insert {
+                            it[id] = track.id
+                            it[MusicHistory.userId] = userId
+                            it[title] = track.title
+                            it[artist] = track.artist
+                            it[MusicHistory.mood] = track.mood
+                            it[date] = track.releaseDate
+                        }
+                    }
+                }
+
+                call.respond(
+                    MusicResponse(
+                        playlist = playlist
                     )
                 )
-
-                if (req.kind == "playlist") {
-                    call.respond(MusicResponse(playlistUrl = "https://open.spotify.com/playlist/mock-${req.mood}"))
-                } else {
-                    call.respond(MusicResponse(playlist = playlist))
-                }
             }
         }
 

@@ -22,7 +22,6 @@ data class MoodRequest(
 @Serializable
 data class MusicResponse(
     val playlist: List<MusicDetailed>? = null,
-    val playlistUrl: String? = null
 )
 
 @Serializable

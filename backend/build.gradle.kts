@@ -24,6 +24,7 @@ dependencies {
     implementation("org.jetbrains.exposed:exposed-core:0.49.0")
     implementation("org.jetbrains.exposed:exposed-jdbc:0.49.0")
     implementation("org.postgresql:postgresql:42.7.3")
+    implementation("io.github.cdimascio:dotenv-kotlin:6.4.1")
 }
 
 application {

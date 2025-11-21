@@ -18,6 +18,9 @@ import io.github.smiley4.ktorswaggerui.data.AuthType
 import io.ktor.server.auth.*
 import org.jetbrains.exposed.sql.selectAll
 import org.jetbrains.exposed.sql.transactions.transaction
+import io.github.cdimascio.dotenv.dotenv
+
+val env = dotenv()
 
 fun main() {
     embeddedServer(Netty, port = 8080, host = "0.0.0.0") {
