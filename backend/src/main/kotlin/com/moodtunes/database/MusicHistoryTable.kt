@@ -3,7 +3,7 @@ package com.moodtunes.database
 import org.jetbrains.exposed.sql.Table
 
 object MusicHistory : Table() {
-    val id = integer("id").autoIncrement()
+    val id = varchar("id", 100) // UUID
     val userId = integer("user_id") references Users.id
     val title = varchar("title", 255)
     val artist = varchar("artist", 255)
