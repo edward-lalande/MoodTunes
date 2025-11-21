@@ -16,6 +16,7 @@ object DatabaseFactory {
         transaction {
             SchemaUtils.create(Users)
             SchemaUtils.create(RefreshTokens)
+            SchemaUtils.create(MusicHistory)
         }
     }
 }
