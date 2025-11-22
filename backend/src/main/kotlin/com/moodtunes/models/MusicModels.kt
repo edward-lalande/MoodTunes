@@ -22,7 +22,6 @@ data class MoodRequest(
 @Serializable
 data class MusicResponse(
     val playlist: List<MusicDetailed>? = null,
-    val playlistUrl: String? = null
 )
 
 @Serializable
@@ -42,7 +41,6 @@ data class MusicHistoryResponse(
 
 @Serializable
 data class AddHistoryRequest(
-    val token: String,
     val title: String,
     val artist: String,
     val mood: String,
@@ -51,6 +49,5 @@ data class AddHistoryRequest(
 
 @Serializable
 data class DeleteHistoryRequest(
-    val token: String,
     val id: String
 )
