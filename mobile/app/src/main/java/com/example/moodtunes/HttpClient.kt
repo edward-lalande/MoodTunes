@@ -1,3 +1,6 @@
+import android.content.Context
+import androidx.compose.ui.platform.LocalContext
+import com.example.moodtunes.storage.JWTHandler
 import com.google.gson.Gson
 import okhttp3.*
 import kotlinx.coroutines.Dispatchers
@@ -10,19 +13,34 @@ object HttpClient {
 
     suspend inline fun <reified T> get(url: String): T? = request("GET", url)
 
+    suspend inline fun <reified T> getProtected(url: String, token: String): T? {
+        return request(method = "GET", url = url, token = token)
+    }
+
     suspend inline fun <reified T> post(url: String, body: Any? = null): T? =
         request("POST", url, gson.toJson(body))
 
-    suspend inline fun <reified T> request(method: String, url: String, jsonBody: String? = null): T? {
+    suspend inline fun <reified T> patchProtected(url: String, token: String, body: Any? = null): T? =
+        request("PATCH", url = url, token = token, jsonBody = gson.toJson(body))
+
+    suspend inline fun <reified T> deleteProtected(url: String, token: String): T? =
+        request("DELETE", url = url, token = token)
+
+    suspend inline fun <reified T> request(method: String, url: String, jsonBody: String? = null, token: String? = null): T? {
         return withContext(Dispatchers.IO) {
             val body = jsonBody?.let {
                 RequestBody.create("application/json; charset=utf-8".toMediaType(), it)
             }
 
-            val request = Request.Builder()
+            val requestBuild = Request.Builder()
                 .url(url)
                 .method(method, body)
-                .build()
+
+            if (token != null) {
+                requestBuild.addHeader("Authorization", "Bearer $token")
+            }
+
+            val request = requestBuild.build()
 
             val response = client.newCall(request).execute()
             val responseBody = response.body?.string() ?: return@withContext null
@@ -35,13 +53,25 @@ object HttpClient {
 class Call(val baseUrl: String) {
     suspend inline fun <reified T> get(path: String) =
         HttpClient.get<T>(baseUrl + path)
+
+    suspend inline fun <reified T> getProtected(path: String, token: String) =
+        HttpClient.getProtected<T>(url = baseUrl + path, token = token)
+
     suspend inline fun <reified T> post(url: String, body: Any? = null) =
         HttpClient.post<T>(if (url.startsWith("http://") || url.startsWith("https://")) url else baseUrl + url, body)
+
+    suspend inline fun <reified T> patchProtected(url: String, token: String, body: Any? = null) =
+        HttpClient.patchProtected<T>(if (url.startsWith("http://") || url.startsWith("https://")) url else baseUrl + url, token = token, body)
+
+    suspend inline fun <reified T> deleteProtected(path: String, token: String) =
+        HttpClient.deleteProtected<T>(baseUrl + path, token)
+
     suspend inline fun <reified T> request(
         method: String,
         url: String,
         jsonBody: String? = null
-    ) =  HttpClient.request<T>(method, if (url.startsWith("http://") || url.startsWith("https://")) url else baseUrl + url, jsonBody)
+    ) =  HttpClient.request<T>(method, url, jsonBody)
 }
 
-val api = Call("http://192.168.200.176:8080/")
+//val api = Call("http://192.168.11.49:8080/")
+val api = Call("http://10.0.2.2:8080/")
