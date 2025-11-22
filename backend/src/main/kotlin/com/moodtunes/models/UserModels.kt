@@ -3,7 +3,42 @@ package com.moodtunes.models
 import kotlinx.serialization.Serializable
 
 @Serializable
-data class UserResponse(
+data class CreateUserRequest(
+    val username: String,
+    val email: String,
+    val password: String,
+)
+
+@Serializable
+data class LoginUserRequest(
+    val username: String,
+    val password: String,
+)
+
+@Serializable
+data class LogoutUserRequest(
+    val token: String,
+)
+
+@Serializable
+data class ModifyUserRequest(
+    val username: String? = null,
+    val email: String? = null,
+    val password: String? = null
+)
+
+@Serializable
+data class CreateUserResponse(
+    val token: String,
+)
+
+@Serializable
+data class LoginUserResponse(
+    val token: String,
+)
+
+@Serializable
+data class GetUserResponse(
     val username: String,
     val email: String,
     val createdAt: String
