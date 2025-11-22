@@ -80,8 +80,14 @@ fun Route.musicRoutes() {
             description = "Stores a new music entry with its mood and Spotify link."
             request { body<AddHistoryRequest>() }
             response {
-                HttpStatusCode.Created to { description = "Song successfully added to history" }
-                HttpStatusCode.BadRequest to { description = "Invalid request body" }
+                HttpStatusCode.Created to {
+                    description = "Song successfully added to history"
+                    body<SuccessResponse>()
+                }
+                HttpStatusCode.BadRequest to {
+                    description = "Invalid request body"
+                    body<ErrorResponse>()
+                }
             }
         }) {
             val req = call.receive<AddHistoryRequest>()
@@ -98,7 +104,7 @@ fun Route.musicRoutes() {
 
             call.respond(
                 HttpStatusCode.Created,
-                mapOf("status" to "added", "id" to newEntry.id)
+                SuccessResponse(newEntry.id)
             )
         }
 
@@ -108,17 +114,23 @@ fun Route.musicRoutes() {
             description = "Deletes a specific song from the history using its unique ID."
             request { body<DeleteHistoryRequest>() }
             response {
-                HttpStatusCode.OK to { description = "Song successfully deleted" }
-                HttpStatusCode.NotFound to { description = "Song ID not found" }
+                HttpStatusCode.OK to {
+                    description = "Song successfully deleted"
+                    body<SuccessResponse>()
+                }
+                HttpStatusCode.NotFound to {
+                    description = "Song ID not found"
+                    body<ErrorResponse>()
+                }
             }
         }) {
             val req = call.receive<DeleteHistoryRequest>()
             val removed = musicHistoryStorage.removeIf { it.id == req.id }
 
             if (removed) {
-                call.respond(HttpStatusCode.OK, mapOf("status" to "deleted", "id" to req.id))
+                call.respond(HttpStatusCode.OK, SuccessResponse(req.id))
             } else {
-                call.respond(HttpStatusCode.NotFound, mapOf("error" to "ID not found"))
+                call.respond(HttpStatusCode.NotFound, ErrorResponse("ID not found"))
             }
         }
     }
