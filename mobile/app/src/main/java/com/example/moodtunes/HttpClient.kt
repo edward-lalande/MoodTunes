@@ -73,5 +73,4 @@ class Call(val baseUrl: String) {
     ) =  HttpClient.request<T>(method, url, jsonBody)
 }
 
-//val api = Call("http://192.168.11.49:8080/")
 val api = Call("http://10.0.2.2:8080/")
