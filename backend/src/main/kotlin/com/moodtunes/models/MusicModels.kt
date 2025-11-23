@@ -48,6 +48,12 @@ data class AddHistoryRequest(
 )
 
 @Serializable
+data class EditHistoryResponse(
+    val status: String,
+    val id: String
+)
+
+@Serializable
 data class DeleteHistoryRequest(
     val id: String
 )
