@@ -144,7 +144,7 @@ fun Result(navController: NavHostController, selectedOption: String, moodName: S
                             modifier = Modifier.fillMaxWidth()
                         )
                         AsyncImage(
-                            model = resp?.albumCoverUrl, // pour test, changer avec https://i.insider.com/602ee9ced3ad27001837f2ac?width=1000&format=jpeg&auto=webp
+                            model = resp?.albumCoverUrl,
                             contentDescription = "Cover of the album",
                             contentScale = ContentScale.Crop,
                             modifier = Modifier
