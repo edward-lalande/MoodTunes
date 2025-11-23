@@ -3,16 +3,6 @@ package com.moodtunes.models
 import kotlinx.serialization.Serializable
 
 @Serializable
-data class ErrorResponse(
-    val error: String
-)
-
-@Serializable
-data class SuccessResponse(
-    val success: String
-)
-
-@Serializable
 data class CreateUserRequest(
     val username: String,
     val email: String,
