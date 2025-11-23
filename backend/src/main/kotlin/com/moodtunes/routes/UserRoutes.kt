@@ -81,7 +81,7 @@ fun Route.userRoutes() {
                     body<LoginUserResponse>()
                 }
                 HttpStatusCode.NotFound to {
-                    description = "Invalid credentials"
+                    description = "User not found"
                     body<ErrorResponse>()
                 }
             }
