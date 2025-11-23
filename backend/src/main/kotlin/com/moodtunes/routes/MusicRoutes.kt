@@ -82,6 +82,7 @@ fun Route.musicRoutes() {
                     }
                     HttpStatusCode.Unauthorized to {
                         description = "Missing or invalid token (handled automatically by Bearer auth)"
+                        body<ErrorResponse>()
                     }
                 }
             }) {
@@ -112,9 +113,13 @@ fun Route.musicRoutes() {
                 description = "Stores a new music entry with its mood and Spotify link."
                 request { body<AddHistoryRequest>() }
                 response {
-                    HttpStatusCode.Created to { description = "Song successfully added to history" }
+                    HttpStatusCode.Created to {
+                        description = "Song successfully added to history"
+                        body<EditHistoryResponse>()
+                    }
                     HttpStatusCode.Unauthorized to {
                         description = "Missing or invalid token (handled automatically by Bearer auth)"
+                        body<ErrorResponse>()
                     }
                 }
             }) {
@@ -135,7 +140,7 @@ fun Route.musicRoutes() {
 
                 call.respond(
                     HttpStatusCode.Created,
-                    mapOf("status" to "added", "id" to newId)
+                    EditHistoryResponse("added", newId)
                 )
             }
         }
@@ -148,10 +153,17 @@ fun Route.musicRoutes() {
                 description = "Deletes a specific song from the history using its unique ID."
                 request { body<DeleteHistoryRequest>() }
                 response {
-                    HttpStatusCode.OK to { description = "Song successfully deleted" }
-                    HttpStatusCode.NotFound to { description = "Song ID not found" }
+                    HttpStatusCode.OK to {
+                        description = "Song successfully deleted"
+                        body<EditHistoryResponse>()
+                    }
+                    HttpStatusCode.NotFound to {
+                        description = "Song ID not found"
+                        body<ErrorResponse>()
+                    }
                     HttpStatusCode.Unauthorized to {
                         description = "Missing or invalid token (handled automatically by Bearer auth)"
+                        body<ErrorResponse>()
                     }
                 }
             }) {
@@ -165,9 +177,15 @@ fun Route.musicRoutes() {
                 }
 
                 if (removed > 0) {
-                    call.respond(HttpStatusCode.OK, mapOf("status" to "deleted", "id" to req.id))
+                    call.respond(
+                        HttpStatusCode.OK,
+                        EditHistoryResponse("deleted", req.id)
+                    )
                 } else {
-                    call.respond(HttpStatusCode.NotFound, mapOf("error" to "ID not found"))
+                    call.respond(
+                        HttpStatusCode.NotFound,
+                        ErrorResponse("ID not found")
+                    )
                 }
             }
         }

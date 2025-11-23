@@ -31,7 +31,10 @@ fun Route.userRoutes() {
                     description = "User successfully created"
                     body<CreateUserResponse>()
                 }
-                HttpStatusCode.BadRequest to { description = "Invalid request body" }
+                HttpStatusCode.BadRequest to {
+                    description = "Invalid request body"
+                    body<ErrorResponse>()
+                }
             }
         }) {
             val req = call.receive<CreateUserRequest>()
@@ -39,7 +42,7 @@ fun Route.userRoutes() {
             transaction {
                 Users.selectAll().where { Users.email eq req.email }.singleOrNull()
             } ?.let {
-                return@post call.respond(HttpStatusCode.BadRequest, "User already exists")
+                return@post call.respond(HttpStatusCode.BadRequest, ErrorResponse("User already exists"))
             }
 
             val hash = req.password.hashCode().toString()
@@ -55,7 +58,7 @@ fun Route.userRoutes() {
 
             val userToken = transaction {
                 Users.selectAll().where { Users.email eq req.email }.singleOrNull()
-            } ?: return@post call.respond(HttpStatusCode.BadRequest, "User couldn't be created")
+            } ?: return@post call.respond(HttpStatusCode.BadRequest, ErrorResponse("User couldn't be created"))
 
             val refreshToken = JwtConfig.createRefreshToken(userToken[Users.id])
 
@@ -77,7 +80,10 @@ fun Route.userRoutes() {
                     description = "Successfully logged in"
                     body<LoginUserResponse>()
                 }
-                HttpStatusCode.NotFound to { description = "User not found" }
+                HttpStatusCode.NotFound to {
+                    description = "User not found"
+                    body<ErrorResponse>()
+                }
             }
         }) {
             val req = call.receive<LoginUserRequest>()
@@ -89,11 +95,11 @@ fun Route.userRoutes() {
                     (Users.username eq req.username) and
                     (Users.passwordHash eq passwordHash)
                 }.singleOrNull()
-            } ?: return@post call.respond(HttpStatusCode.NotFound, "Invalid credentials")
+            } ?: return@post call.respond(HttpStatusCode.NotFound, ErrorResponse("Invalid credentials"))
 
             val token = transaction {
                 RefreshTokens.selectAll().where { RefreshTokens.userId eq user[Users.id] }.singleOrNull()
-            } ?: return@post call.respond(HttpStatusCode.NotFound, "Internal error")
+            } ?: return@post call.respond(HttpStatusCode.NotFound, ErrorResponse("Internal error"))
 
             call.respond(
                 LoginUserResponse(
@@ -109,9 +115,13 @@ fun Route.userRoutes() {
             request { body<LogoutUserRequest>() }
             response {
                 HttpStatusCode.OK to {
-                    description = "Successfully logged in"
+                    description = "Successfully logged out"
+                    body<SuccessResponse>()
                 }
-                HttpStatusCode.NotFound to { description = "User not found" }
+                HttpStatusCode.NotFound to {
+                    description = "User not found"
+                    body<ErrorResponse>()
+                }
             }
         }) {
             // logout
@@ -130,9 +140,11 @@ fun Route.userRoutes() {
                     }
                     HttpStatusCode.Unauthorized to {
                         description = "Missing or invalid token (handled automatically by Bearer auth)"
+                        body<ErrorResponse>()
                     }
                     HttpStatusCode.NotFound to {
                         description = "User not found. The token belongs to a deleted user."
+                        body<ErrorResponse>()
                     }
                 }
             }) {
@@ -140,7 +152,7 @@ fun Route.userRoutes() {
 
                 val user = transaction {
                     Users.selectAll().where { Users.id eq userId }.singleOrNull()
-                } ?: return@get call.respond(HttpStatusCode.NotFound, "User not found")
+                } ?: return@get call.respond(HttpStatusCode.NotFound, ErrorResponse("User not found"))
 
                 call.respond(
                     GetUserResponse(
@@ -160,12 +172,17 @@ fun Route.userRoutes() {
                 description = "Modify the authenticated user's username, email, or password. Only non-null fields are updated."
                 request { body<ModifyUserRequest>() }
                 response {
-                    HttpStatusCode.OK to { description = "User updated successfully" }
+                    HttpStatusCode.OK to {
+                        description = "User updated successfully"
+                        body<SuccessResponse>()
+                    }
                     HttpStatusCode.Unauthorized to {
                         description = "Missing or invalid token (handled automatically by Bearer auth)"
+                        body<ErrorResponse>()
                     }
                     HttpStatusCode.NotFound to {
                         description = "User not found. The token belongs to a deleted user."
+                        body<ErrorResponse>()
                     }
                 }
             }) {
@@ -183,10 +200,10 @@ fun Route.userRoutes() {
                 }
 
                 if (!ok) {
-                    return@patch call.respond(HttpStatusCode.NotFound, "User not found")
+                    return@patch call.respond(HttpStatusCode.NotFound, ErrorResponse("User not found"))
                 }
 
-                call.respond(HttpStatusCode.OK, "User updated successfully")
+                call.respond(HttpStatusCode.OK, SuccessResponse("User updated successfully"))
             }
         }
 
@@ -198,12 +215,17 @@ fun Route.userRoutes() {
                 description = "Deletes the user associated with the provided token."
 
                 response {
-                    HttpStatusCode.OK to { description = "User deleted successfully" }
+                    HttpStatusCode.OK to {
+                        description = "User deleted successfully"
+                        body<SuccessResponse>()
+                    }
                     HttpStatusCode.Unauthorized to {
                         description = "Missing or invalid token (handled automatically by Bearer auth)"
+                        body<ErrorResponse>()
                     }
                     HttpStatusCode.NotFound to {
                         description = "User not found. The token belongs to a deleted user."
+                        body<ErrorResponse>()
                     }
                 }
             }) {
@@ -212,7 +234,7 @@ fun Route.userRoutes() {
                 transaction { RefreshTokens.deleteWhere { RefreshTokens.userId eq userId } }
                 transaction { Users.deleteWhere { Users.id eq userId } }
 
-                call.respond(HttpStatusCode.OK, "User deleted")
+                call.respond(HttpStatusCode.OK, SuccessResponse("User deleted"))
             }
         }
     }
