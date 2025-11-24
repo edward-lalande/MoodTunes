@@ -1,5 +1,9 @@
 package com.example.moodtunes.pages
 
+import Call
+import HttpClient
+import android.annotation.SuppressLint
+import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -20,27 +24,46 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import api
+import com.example.moodtunes.DataObject.TokenResponse
+import com.example.moodtunes.DataObject.UserData
 import com.example.moodtunes.R
 import com.example.moodtunes.components.MoodTunesTextField
 import com.example.moodtunes.components.MoodTunesButtonField
 import com.example.moodtunes.components.Background
+import com.example.moodtunes.storage.JWTHandler
+import kotlinx.coroutines.launch
 
 @Composable
 fun LoginPage(navController: NavController) {
+    var user by remember { mutableStateOf<UserData?>(null) }
+
+    LaunchedEffect(Unit) {
+        try {
+            user = api.get<UserData>("login")
+        } catch (e: Exception){
+            user = null
+            println(e.toString())
+        }
+    }
+
     Background {
         Column(
             modifier = Modifier
@@ -54,7 +77,9 @@ fun LoginPage(navController: NavController) {
 
             Row(
                 verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp)
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp)
             ) {
                 HorizontalDivider(
                     Modifier.weight(1f),
@@ -73,10 +98,10 @@ fun LoginPage(navController: NavController) {
                 )
             }
 
-            SignInAndUpForm(
+            SignInForm(
                 navController,
-                buttonText = "Sign in",
-                signUp = false
+                userName = user?.username,
+                password = user?.password
             )
 
             HasAnAccountForm(
@@ -151,7 +176,6 @@ fun SpotifyButton() {
                     .size(45.dp)
                     .padding(end = 12.dp)
             )
-
             Text(
                 text = "Continue with Spotify",
                 fontSize = 20.sp,
@@ -167,8 +191,8 @@ fun PasswordForm(
     confirmedRequired: Boolean,
     passwordText: String,
     onPasswordChange: (String) -> Unit,
-    confirmPasswordText: String,
-    onConfirmPasswordChange: (String) -> Unit
+    confirmPasswordText: String = "",
+    onConfirmPasswordChange: (String) -> Unit = {}
 ) {
     MoodTunesTextField(
         isPassword = true,
@@ -207,18 +231,26 @@ fun PasswordForm(
     }
 }
 
+@SuppressLint("CoroutineCreationDuringComposition")
 @Composable
-fun SignInAndUpForm(navController: NavController, buttonText: String, signUp: Boolean) {
+fun SignInForm(
+    navController: NavController,
+    userName: String? = null,
+    password: String? = null
+) {
+    val context = LocalContext.current
+
+    val scope = rememberCoroutineScope()
+
     var usernameText by remember { mutableStateOf("") }
-    var emailText by remember { mutableStateOf("") }
     var passwordText by remember { mutableStateOf("") }
-    var confirmPasswordText by remember { mutableStateOf("") }
+    val isEnableButton = usernameText.isNotBlank() && passwordText.isNotBlank()
 
     MoodTunesTextField(
         modifier = Modifier
             .fillMaxWidth()
             .padding(16.dp),
-        text = usernameText,
+        text = userName ?: usernameText,
         onTextChange = { newText -> usernameText = newText },
         outlineColor = Color(0xFF5B21B6),
         placeholder = "Username",
@@ -226,34 +258,36 @@ fun SignInAndUpForm(navController: NavController, buttonText: String, signUp: Bo
         fillColor = Color.Transparent,
         textColor = Color.White
     )
-    MoodTunesTextField(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(16.dp),
-        text = emailText,
-        onTextChange = { newText -> emailText = newText },
-        outlineColor = Color(0xFF5B21B6),
-        placeholder = "Email",
-        backgroundColor = Color(0xFF1A1A1A).copy(alpha = 0.1f),
-        fillColor = Color.Transparent,
-        textColor = Color.White
-    )
 
     PasswordForm(
-        confirmedRequired = signUp,
-        passwordText = passwordText,
+        passwordText = password ?: passwordText,
         onPasswordChange = { newText -> passwordText = newText },
-        confirmPasswordText = confirmPasswordText,
-        onConfirmPasswordChange = { newText -> confirmPasswordText = newText }
+        confirmedRequired = false
     )
-    var isEnableButton = true
-    if (passwordText != confirmPasswordText && signUp) {
-        isEnableButton = false
-    }
 
     MoodTunesButtonField(
         onClick = {
-            navController.navigate("select-mood")
+            scope.launch {
+                try {
+                    val request = UserData(
+                        password = passwordText,
+                        username = usernameText
+                    )
+                    val response = api.post<TokenResponse>("/user/login", request)
+
+                    if (!response?.token.isNullOrBlank()) {
+                        val handler = JWTHandler()
+                        handler.saveToken(context, response.token)
+
+                        navController.navigate("select-mood")
+                    } else {
+                        Toast.makeText(context, "Invalid credentials", Toast.LENGTH_LONG).show()
+                        println("Invalid credentials")
+                    }
+                } catch (e: Exception) {
+                    println("Sign In failed: $e")
+                }
+            }
         },
         modifier = Modifier
             .fillMaxWidth()
@@ -263,7 +297,7 @@ fun SignInAndUpForm(navController: NavController, buttonText: String, signUp: Bo
         enabled = isEnableButton,
         content = {
             Text(
-                text = buttonText,
+                text = "Sign in",
                 style = TextStyle(
                     fontWeight = FontWeight.Bold,
                     fontSize = 18.sp

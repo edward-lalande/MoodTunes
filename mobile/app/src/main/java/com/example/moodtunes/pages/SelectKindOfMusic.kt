@@ -41,9 +41,21 @@ data class ContentOption(
 @Composable
 fun ContentTypeSelector(selectedOption: String, onOptionSelected: (String) -> Unit) {
     val options = listOf(
-        ContentOption("Album", "Discover full albums that match your mood", OptionIcon.Painter(painterResource(id = R.drawable.kind_of_music_album))),
-        ContentOption("Playlists", "Curated playlist for your current vibes", OptionIcon.Painter(painterResource(id = R.drawable.kind_of_music_playlist))),
-        ContentOption("Track", "Individual songs that capture your mood", OptionIcon.Painter(painterResource(id = R.drawable.kind_of_music_music)))
+        ContentOption("Album",
+            "Discover full albums that match your mood",
+            OptionIcon.Painter(painterResource(id = R.drawable.kind_of_music_album)
+            )
+        ),
+        ContentOption("Playlists",
+            "Curated playlist for your current vibes",
+            OptionIcon.Painter(painterResource(id = R.drawable.kind_of_music_playlist)
+            )
+        ),
+        ContentOption("Track",
+            "Individual songs that capture your mood",
+            OptionIcon.Painter(painterResource(id = R.drawable.kind_of_music_music)
+            )
+        )
     )
 
     Column(modifier = Modifier.fillMaxWidth()) {
