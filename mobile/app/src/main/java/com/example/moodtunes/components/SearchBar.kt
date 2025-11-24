@@ -2,6 +2,7 @@ package com.example.moodtunes.components
 
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.runtime.Composable
@@ -20,6 +21,7 @@ fun SearchBar(placeholder: String, searchText: String, onTextChange: (String) ->
         onTextChange = onTextChange,
         modifier = Modifier
             .fillMaxWidth()
+            .padding(8.dp)
             .height(56.dp),
         leadingIcon = Icons.Default.Search,
         placeholder = placeholder,

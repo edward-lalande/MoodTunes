@@ -50,7 +50,7 @@ import androidx.core.net.toUri
 import api
 import coil.compose.AsyncImage
 import com.example.moodtunes.DataObject.MusicDetailed
-import com.example.moodtunes.DataObject.MusicDetailedResponse
+import com.example.moodtunes.DataObject.MusicPlaylistResponse
 import com.example.moodtunes.DataObject.NormalMoodRequest
 import com.example.moodtunes.storage.JWTHandler
 import com.google.gson.Gson
@@ -58,23 +58,26 @@ import com.google.gson.Gson
 @Composable
 fun Result(navController: NavHostController, selectedOption: String, moodName: String) {
     val context = LocalContext.current
-    var apiResp by remember { mutableStateOf<MusicDetailedResponse?>(null) }
+    var apiResp by remember { mutableStateOf<MusicPlaylistResponse?>(null) }
     var resp by remember { mutableStateOf<MusicDetailed?>(null) }
     var isLoading by remember { mutableStateOf(true) }
 
     LaunchedEffect(Unit) {
         try {
-            val handler = JWTHandler()
-            val token: String? = handler.getToken(context)
-            println("token: $token")
-            apiResp = api.request<MusicDetailedResponse?>("POST", "http://10.210.98.162:8080/music/mood", Gson().toJson(NormalMoodRequest(mood = moodName, kind = selectedOption)), token)
+            val token = JWTHandler().getToken(context)
+
+            apiResp = api.request<MusicPlaylistResponse?>(
+                method = "POST",
+                url = "music/mood",
+                jsonBody = Gson().toJson(NormalMoodRequest(mood = moodName, kind = selectedOption)),
+                token
+            )
             if (apiResp != null) {
                 isLoading = false
             }
             resp = apiResp?.playlist[0]
-            println("resp: ${apiResp.toString()}")
         } catch(e: Error) {
-            println("ERRRORR: ${e.message}")
+            println("Error: ${e.message}")
         }
     }
 

@@ -33,9 +33,6 @@ object HttpClient {
                 RequestBody.create("application/json; charset=utf-8".toMediaType(), jsonBody)
             }
 
-            println("Request: $method $url")
-            println("Request body: $jsonBody")
-
             val requestBuild = Request.Builder()
                 .url(url)
                 .method(method, body)
@@ -49,9 +46,6 @@ object HttpClient {
             try {
                 val response = client.newCall(request).execute()
                 val responseBody = response.body?.string()
-                
-                println("Response code: ${response.code}")
-                println("Response body: $responseBody")
 
                 if (!response.isSuccessful || responseBody == null) {
                     return@withContext null
@@ -76,9 +70,6 @@ class Call(val baseUrl: String) {
     suspend inline fun <reified T> post(url: String, body: Any? = null) =
         HttpClient.post<T>(if (url.startsWith("http://") || url.startsWith("https://")) url else baseUrl + url, body)
 
-    suspend inline fun <reified T> postProtected(url: String, token: String, body: Any? = null) =
-        HttpClient.postProtected<T>(if (url.startsWith("http://") || url.startsWith("https://")) url else baseUrl + url, token = token, body)
-
     suspend inline fun <reified T> patchProtected(url: String, token: String, body: Any? = null) =
         HttpClient.patchProtected<T>(if (url.startsWith("http://") || url.startsWith("https://")) url else baseUrl + url, token = token, body)
 
@@ -93,4 +84,4 @@ class Call(val baseUrl: String) {
     ) =  HttpClient.request<T>(method, url, jsonBody, token)
 }
 
-val api = Call("http://10.0.2.2:8080/")
+val api = Call("http://192.168.200.176:8080/")
