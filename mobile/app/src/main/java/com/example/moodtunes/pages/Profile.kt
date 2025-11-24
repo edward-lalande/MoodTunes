@@ -40,6 +40,7 @@ import com.example.moodtunes.components.PageSelected
 import com.example.moodtunes.components.MoodTunesButtonField
 import com.example.moodtunes.storage.JWTHandler
 import kotlinx.coroutines.launch
+import api
 
 @Composable
 fun ProfilePage(navController: NavController) {
@@ -48,7 +49,6 @@ fun ProfilePage(navController: NavController) {
         content = { innerPadding ->
             val context = LocalContext.current
 
-            val api = remember { Call("http://10.0.2.2:8080/") }
             val scope = rememberCoroutineScope()
 
             var actualUsername by remember { mutableStateOf("") }

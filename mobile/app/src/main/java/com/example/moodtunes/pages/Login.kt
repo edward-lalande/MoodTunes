@@ -1,6 +1,7 @@
 package com.example.moodtunes.pages
 
 import Call
+import HttpClient
 import android.annotation.SuppressLint
 import android.widget.Toast
 import androidx.compose.foundation.Image
@@ -40,6 +41,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import api
 import com.example.moodtunes.DataObject.TokenResponse
 import com.example.moodtunes.DataObject.UserData
 import com.example.moodtunes.R
@@ -48,8 +50,6 @@ import com.example.moodtunes.components.MoodTunesButtonField
 import com.example.moodtunes.components.Background
 import com.example.moodtunes.storage.JWTHandler
 import kotlinx.coroutines.launch
-
-val api = Call("http://192.168.200.176:3000/")
 
 @Composable
 fun LoginPage(navController: NavController) {
@@ -240,7 +240,6 @@ fun SignInForm(
 ) {
     val context = LocalContext.current
 
-    val api = remember { Call("http://10.0.2.2:8080/") }
     val scope = rememberCoroutineScope()
 
     var usernameText by remember { mutableStateOf("") }

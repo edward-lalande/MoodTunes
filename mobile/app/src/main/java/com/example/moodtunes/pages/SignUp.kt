@@ -30,7 +30,7 @@ import com.example.moodtunes.components.MoodTunesButtonField
 import com.example.moodtunes.components.MoodTunesTextField
 import kotlinx.coroutines.launch
 import com.example.moodtunes.storage.JWTHandler
-
+import api
 
 @Composable
 fun SignUpPage(navController: NavController) {
@@ -66,7 +66,6 @@ fun SignUpForm(
 ) {
     val context = LocalContext.current
 
-    val api = remember { Call("http://10.0.2.2:8080/") }
     val scope = rememberCoroutineScope()
 
     var usernameText by remember { mutableStateOf("") }
