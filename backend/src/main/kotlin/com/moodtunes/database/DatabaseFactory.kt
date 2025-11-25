@@ -17,6 +17,7 @@ object DatabaseFactory {
             SchemaUtils.create(Users)
             SchemaUtils.create(RefreshTokens)
             SchemaUtils.create(MusicHistory)
+            SchemaUtils.create(SpotifyTokens)
         }
     }
 }
