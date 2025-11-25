@@ -1,6 +1,9 @@
 package com.moodtunes.routes
 
+import com.moodtunes.clients.SpotifyOAuthService
+import com.moodtunes.clients.SpotifyProfileService
 import com.moodtunes.database.MusicHistory
+import com.moodtunes.database.SpotifyTokens
 import com.moodtunes.models.*
 import com.moodtunes.services.MusicService
 import io.ktor.server.routing.*
@@ -26,12 +29,18 @@ fun Route.musicRoutes() {
                 securitySchemeName = "bearerAuth"
                 summary = "Generate a playlist based on a given mood"
                 description =
-                    "Uses Gemini to generate tracks matching the mood and fetches Spotify metadata. Automatically stores the results into the user's history."
+                    "Uses Gemini to generate tracks matching the mood and fetches Spotify metadata. " +
+                            "If the user connected Spotify, the generation is influenced by the user's liked songs (top genres). " +
+                            "Automatically stores the results into the user's history."
                 request { body<MoodRequest>() }
                 response {
                     HttpStatusCode.OK to {
                         description = "A playlist matching the provided mood"
                         body<MusicResponse>()
+                    }
+                    HttpStatusCode.Unauthorized to {
+                        description = "Missing or invalid token"
+                        body<ErrorResponse>()
                     }
                 }
             }) {
@@ -45,7 +54,50 @@ fun Route.musicRoutes() {
                     else -> 1
                 }
 
-                val playlist = MusicService.generatePlaylist(mood, count)
+                var genreHint: String? = null
+
+                val tokenRow = transaction {
+                    SpotifyTokens.selectAll().where { SpotifyTokens.userId eq userId }.singleOrNull()
+                }
+
+                if (tokenRow != null) {
+                    var accessToken = tokenRow[SpotifyTokens.accessToken]
+                    val refreshToken = tokenRow[SpotifyTokens.refreshToken]
+                    val expiresAt = tokenRow[SpotifyTokens.expiresAt]
+
+                    if (System.currentTimeMillis() >= expiresAt && refreshToken != null) {
+                        val newToken = SpotifyOAuthService.refresh(refreshToken)
+                        accessToken = newToken.accessToken
+
+                        transaction {
+                            SpotifyTokens.update({ SpotifyTokens.userId eq userId }) {
+                                it[SpotifyTokens.accessToken] = newToken.accessToken
+                                it[SpotifyTokens.expiresAt] = newToken.expiresAt
+                            }
+                        }
+                    }
+
+                    val topGenres = SpotifyProfileService.getTopGenresFromLikes(
+                        accessToken = accessToken,
+                        sampleTracks = 50
+                    )
+
+                    if (topGenres.isNotEmpty()) {
+                        genreHint = topGenres.joinToString(
+                            prefix = "Top genres likés: ",
+                            separator = ", "
+                        ) { (genre, pct) ->
+                            "${genre} ${(pct * 100).toInt()}%"
+                        }
+                    }
+                    println("genreHint: $genreHint")
+                }
+
+                val playlist = MusicService.generatePlaylist(
+                    mood = mood,
+                    count = count,
+                    genreHint = genreHint
+                )
 
                 transaction {
                     playlist.forEach { track ->
