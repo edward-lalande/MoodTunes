@@ -46,6 +46,7 @@ import com.example.moodtunes.components.MoodTunesButtonField
 import com.example.moodtunes.components.PageSelected
 import com.example.moodtunes.components.SearchBar
 import com.example.moodtunes.components.TopBar
+import com.example.moodtunes.pages.DateHistory
 import com.example.moodtunes.storage.JWTHandler
 import com.google.gson.Gson
 import kotlinx.coroutines.launch
@@ -240,7 +241,7 @@ fun HistoryPage(navController: NavController) {
                                                 coroutineScope.launch {
                                                     isLoading = true
 
-                                                    val rep = api.request<DeleteMusicHistoryResp?>(
+                                                    api.request<DeleteMusicHistoryResp?>(
                                                         method = "DELETE",
                                                         url = "http://192.168.200.176:8080/music/history",
                                                         jsonBody = Gson().toJson(DeleteMusicHistoryReq(item.id)),

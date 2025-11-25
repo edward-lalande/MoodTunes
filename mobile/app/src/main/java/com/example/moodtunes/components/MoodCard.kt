@@ -234,20 +234,8 @@ fun MoodCardWithSong(
                     contentDescription = "Cover of the album",
                     contentScale = ContentScale.Crop,
                     modifier = Modifier
-                        .width(12.dp)
-                        .height(12.dp)
-                        .clip(RoundedCornerShape(16.dp))
-                )
-                Image(
-                    painter = painterResource(id=  R.drawable.month),
-                    contentDescription = "Song image",
-                    modifier = Modifier
-                        .size(60.dp)
-                        .background(
-                            Color.Gray,
-                            shape = RoundedCornerShape(8.dp)
-                        ),
-                    contentScale = ContentScale.Crop
+                        .width(64.dp)
+                        .height(64.dp)
                 )
 
                 Spacer(modifier = Modifier.width(12.dp))

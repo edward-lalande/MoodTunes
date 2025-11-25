@@ -32,7 +32,8 @@ object HttpClient {
             val body = jsonBody?.let {
                 RequestBody.create("application/json; charset=utf-8".toMediaType(), jsonBody)
             }
-
+            println("[MoodTunes] url: ${url}");
+            println("[MoodTunes] body: ${body.toString()}")
             val requestBuild = Request.Builder()
                 .url(url)
                 .method(method, body)
@@ -84,4 +85,4 @@ class Call(val baseUrl: String) {
     ) =  HttpClient.request<T>(method, url, jsonBody, token)
 }
 
-val api = Call("http://192.168.200.176:8080/")
+val api = Call("http://192.168.200.176:8080")

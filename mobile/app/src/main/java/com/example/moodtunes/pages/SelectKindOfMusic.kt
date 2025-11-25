@@ -186,6 +186,7 @@ fun SelectKindOfMusic(navController: NavController, moodName: String) {
                 MoodTunesButtonField(
                     onClick = {
                         if (selectedOption != "") {
+                            println("[MoodTunes] : GO send results/$selectedOption/$moodName")
                             navController.navigate("results/$selectedOption/$moodName")
                         }
                     },

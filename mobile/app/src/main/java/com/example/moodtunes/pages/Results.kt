@@ -65,13 +65,14 @@ fun Result(navController: NavHostController, selectedOption: String, moodName: S
     LaunchedEffect(Unit) {
         try {
             val token = JWTHandler().getToken(context)
-
+            println("token: $token")
             apiResp = api.request<MusicPlaylistResponse?>(
                 method = "POST",
-                url = "music/mood",
+                url = "http://192.168.200.176:8080/music/mood",
                 jsonBody = Gson().toJson(NormalMoodRequest(mood = moodName, kind = selectedOption)),
                 token
             )
+            println("apiResp: ${apiResp.toString()}")
             if (apiResp != null) {
                 isLoading = false
             }
