@@ -25,6 +25,11 @@ dependencies {
     implementation("org.jetbrains.exposed:exposed-jdbc:0.49.0")
     implementation("org.postgresql:postgresql:42.7.3")
     implementation("io.github.cdimascio:dotenv-kotlin:6.4.1")
+
+    implementation("io.ktor:ktor-client-core-jvm:2.3.12")
+    implementation("io.ktor:ktor-client-cio-jvm:2.3.12")
+    implementation("io.ktor:ktor-client-content-negotiation-jvm:2.3.12")
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.3")
 }
 
 application {

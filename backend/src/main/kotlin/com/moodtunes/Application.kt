@@ -3,6 +3,7 @@ package com.moodtunes
 import com.moodtunes.database.DatabaseFactory
 import com.moodtunes.database.RefreshTokens
 import com.moodtunes.routes.musicRoutes
+import com.moodtunes.routes.spotifyOAuthRoutes
 import com.moodtunes.routes.userRoutes
 import io.ktor.server.engine.*
 import io.ktor.server.netty.*
@@ -19,6 +20,8 @@ import io.ktor.server.auth.*
 import org.jetbrains.exposed.sql.selectAll
 import org.jetbrains.exposed.sql.transactions.transaction
 import io.github.cdimascio.dotenv.dotenv
+import com.moodtunes.auth.customBearer
+import com.moodtunes.models.ErrorResponse
 
 val ENV = dotenv {
     directory = "./"
@@ -54,30 +57,40 @@ fun Application.module() {
             bearerFormat = "JWT"
         }
     }
-
     install(Authentication) {
-        bearer("auth-bearer") {
-            authenticate { tokenCredential ->
-                val token = tokenCredential.token
+        customBearer("auth-bearer") {
+
+            validate { token ->
+                if (token == null) {
+                    return@validate null
+                }
 
                 val refreshTokenRow = transaction {
                     RefreshTokens
-                        .selectAll().where { RefreshTokens.id eq token }
+                        .selectAll()
+                        .where { RefreshTokens.id eq token }
                         .singleOrNull()
-                } ?: return@authenticate null
+                } ?: return@validate null
 
                 val userId = refreshTokenRow[RefreshTokens.userId]
 
                 UserIdPrincipal(userId.toString())
             }
+
+            challenge { call ->
+                call.respond(
+                    HttpStatusCode.Unauthorized,
+                    ErrorResponse("Missing or invalid token")
+                )
+            }
         }
     }
-
 
     routing {
         get("/") { call.respondText("MoodTunes API is running", ContentType.Text.Plain) }
 
         musicRoutes()
+        spotifyOAuthRoutes()
         userRoutes()
     }
 }
