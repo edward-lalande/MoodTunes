@@ -18,6 +18,7 @@ import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import org.jetbrains.exposed.sql.transactions.transaction
 import java.util.UUID
 import java.time.LocalDate
+import java.time.format.DateTimeFormatter
 
 fun Route.musicRoutes() {
 
@@ -102,12 +103,14 @@ fun Route.musicRoutes() {
                 transaction {
                     playlist.forEach { track ->
                         MusicHistory.insert {
-                            it[id] = track.id
+                            it[MusicHistory.id] = track.id
                             it[MusicHistory.userId] = userId
-                            it[title] = track.title
-                            it[artist] = track.artist
+                            it[MusicHistory.title] = track.title
+                            it[MusicHistory.artist] = track.artist
                             it[MusicHistory.mood] = track.mood
-                            it[date] = track.releaseDate
+                            it[MusicHistory.date] = LocalDate.now().format(DateTimeFormatter.ISO_DATE)
+                            it[MusicHistory.albumCoverUrl] = track.albumCoverUrl
+                            it[MusicHistory.spotifyTrackUrl] = track.spotifyUrl
                         }
                     }
                 }
@@ -148,52 +151,14 @@ fun Route.musicRoutes() {
                                 title = it[MusicHistory.title],
                                 artist = it[MusicHistory.artist],
                                 mood = it[MusicHistory.mood],
-                                date = it[MusicHistory.date]
+                                date = it[MusicHistory.date],
+                                albumCoverUrl = it[MusicHistory.albumCoverUrl],
+                                spotifyTrackUrl = it[MusicHistory.spotifyTrackUrl]
                             )
                         }
                 }
 
                 call.respond(MusicHistoryResponse("user-$userId", entries))
-            }
-        }
-
-        authenticate("auth-bearer") {
-            post("/history", {
-                tags = listOf("Music")
-                summary = "Add a song to the user's history"
-                securitySchemeName = "bearerAuth"
-                description = "Stores a new music entry with its mood and Spotify link."
-                request { body<AddHistoryRequest>() }
-                response {
-                    HttpStatusCode.Created to {
-                        description = "Song successfully added to history"
-                        body<EditHistoryResponse>()
-                    }
-                    HttpStatusCode.Unauthorized to {
-                        description = "Missing or invalid token (handled automatically by Bearer auth)"
-                        body<ErrorResponse>()
-                    }
-                }
-            }) {
-                val userId = call.principal<UserIdPrincipal>()!!.name.toInt()
-                val req = call.receive<AddHistoryRequest>()
-                val newId = UUID.randomUUID().toString()
-
-                transaction {
-                    MusicHistory.insert {
-                        it[id] = newId
-                        it[MusicHistory.userId] = userId
-                        it[title] = req.title
-                        it[artist] = req.artist
-                        it[mood] = req.mood
-                        it[date] = LocalDate.now().toString()
-                    }
-                }
-
-                call.respond(
-                    HttpStatusCode.Created,
-                    EditHistoryResponse("added", newId)
-                )
             }
         }
 

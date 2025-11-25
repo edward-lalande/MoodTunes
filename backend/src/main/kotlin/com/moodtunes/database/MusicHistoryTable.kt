@@ -9,6 +9,8 @@ object MusicHistory : Table() {
     val artist = varchar("artist", 255)
     val mood = varchar("mood", 100)
     val date = varchar("date", 30)
+    val albumCoverUrl = varchar("album_cover_url", 255)
+    val spotifyTrackUrl = varchar("spotify_track_url", 255)
 
     override val primaryKey = PrimaryKey(id)
 }

@@ -30,7 +30,9 @@ data class MusicHistoryEntry(
     val title: String,
     val artist: String,
     val mood: String,
-    val date: String
+    val date: String,
+    val albumCoverUrl: String,
+    val spotifyTrackUrl: String
 )
 
 @Serializable
