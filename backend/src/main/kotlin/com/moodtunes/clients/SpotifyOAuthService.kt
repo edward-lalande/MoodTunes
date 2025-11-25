@@ -55,6 +55,8 @@ object SpotifyOAuthService {
 
     fun buildAuthorizeUrl(state: String, codeChallenge: String): String {
         val scopes = listOf(
+            "user-read-email",
+            "user-read-private",
             "user-library-read"
         ).joinToString(" ")
 
