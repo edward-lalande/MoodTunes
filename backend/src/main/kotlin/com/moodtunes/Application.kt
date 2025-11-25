@@ -3,6 +3,7 @@ package com.moodtunes
 import com.moodtunes.database.DatabaseFactory
 import com.moodtunes.database.RefreshTokens
 import com.moodtunes.routes.musicRoutes
+import com.moodtunes.routes.spotifyOAuthRoutes
 import com.moodtunes.routes.userRoutes
 import io.ktor.server.engine.*
 import io.ktor.server.netty.*
@@ -78,6 +79,7 @@ fun Application.module() {
         get("/") { call.respondText("MoodTunes API is running", ContentType.Text.Plain) }
 
         musicRoutes()
+        spotifyOAuthRoutes()
         userRoutes()
     }
 }
