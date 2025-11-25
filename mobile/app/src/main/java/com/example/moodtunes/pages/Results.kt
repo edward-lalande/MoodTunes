@@ -68,7 +68,7 @@ fun Result(navController: NavHostController, selectedOption: String, moodName: S
             println("token: $token")
             apiResp = api.request<MusicPlaylistResponse?>(
                 method = "POST",
-                url = "http://192.168.200.176:8080/music/mood",
+                url = "http://10.0.2.2:8080/music/mood",
                 jsonBody = Gson().toJson(NormalMoodRequest(mood = moodName, kind = selectedOption)),
                 token
             )

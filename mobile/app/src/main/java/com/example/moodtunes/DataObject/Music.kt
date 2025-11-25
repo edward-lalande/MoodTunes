@@ -32,6 +32,7 @@ data class MusicHistory(
     val id: String,
     val title: String,
     val artist: String,
+    val spotifyTrackUrl: String,
     val albumCoverUrl: String,
     val mood: String,
     val date: String

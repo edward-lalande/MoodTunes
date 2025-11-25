@@ -13,6 +13,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import MOOD_NAME_TO_MOOD_OBJ
+import android.content.Intent
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.height
 import androidx.compose.material3.CircularProgressIndicator
@@ -33,6 +34,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.net.toUri
 import androidx.navigation.NavController
 import api
 import com.example.moodtunes.DataObject.DeleteMusicHistoryReq
@@ -46,7 +48,6 @@ import com.example.moodtunes.components.MoodTunesButtonField
 import com.example.moodtunes.components.PageSelected
 import com.example.moodtunes.components.SearchBar
 import com.example.moodtunes.components.TopBar
-import com.example.moodtunes.pages.DateHistory
 import com.example.moodtunes.storage.JWTHandler
 import com.google.gson.Gson
 import kotlinx.coroutines.launch
@@ -69,7 +70,7 @@ fun HistoryPage(navController: NavController) {
         try {
             val response = api.request<MusicHistoryList?>(
                 method = "GET",
-                url = "http://192.168.200.176:8080/music/history",
+                url = "http://10.0.2.2:8080/music/history",
                 jsonBody = null,
                 token = token
             )
@@ -237,22 +238,25 @@ fun HistoryPage(navController: NavController) {
                                             songArtist = item.artist,
                                             albumCoverUrl = item.albumCoverUrl,
                                             mood = moodEnum ?: Mood.Happy,
+                                            onClick = {
+                                                val viewIntent = Intent("android.intent.action.VIEW",
+                                                    item?.spotifyTrackUrl?.toUri());
+                                                context.startActivity(viewIntent);
+                                            },
                                             onDelete = {
                                                 coroutineScope.launch {
                                                     isLoading = true
 
                                                     api.request<DeleteMusicHistoryResp?>(
                                                         method = "DELETE",
-                                                        url = "http://192.168.200.176:8080/music/history",
+                                                        url = "http://10.0.2.2:8080/music/history",
                                                         jsonBody = Gson().toJson(DeleteMusicHistoryReq(item.id)),
-                                                        token = token,
+                                                        token = token.toString(),
                                                     )
 
-                                                    val response = api.request<MusicHistoryList?>(
-                                                        method = "GET",
-                                                        url = "http://192.168.200.176:8080/music/history",
-                                                        jsonBody = null,
-                                                        token = token
+                                                    val response = api.getProtected<MusicHistoryList?>(
+                                                        path = "/music/history",
+                                                        token = token.toString()
                                                     )
                                                     if (response != null) {
                                                         history = response.history
