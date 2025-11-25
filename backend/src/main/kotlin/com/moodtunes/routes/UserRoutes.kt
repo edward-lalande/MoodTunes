@@ -5,6 +5,7 @@ import com.moodtunes.database.RefreshTokens
 import com.moodtunes.database.Users
 import com.moodtunes.models.*
 import com.moodtunes.utils.*
+import com.moodtunes.utils.UserHelpers.updateUser
 import io.ktor.server.routing.*
 import io.ktor.server.application.*
 import io.ktor.server.response.*
@@ -47,20 +48,16 @@ fun Route.userRoutes() {
 
             val hash = req.password.hashCode().toString()
 
-            transaction {
+            val userId = transaction {
                 Users.insert {
                     it[username] = req.username
                     it[email] = req.email
                     it[passwordHash] = hash
                     it[createdAt] = LocalDateTime.now().toString()
-                }
+                } get Users.id
             }
 
-            val userToken = transaction {
-                Users.selectAll().where { Users.email eq req.email }.singleOrNull()
-            } ?: return@post call.respond(HttpStatusCode.BadRequest, ErrorResponse("User couldn't be created"))
-
-            val refreshToken = JwtConfig.createRefreshToken(userToken[Users.id])
+            val refreshToken = UserHelpers.getOrCreateRefreshToken(userId)
 
             call.respond(
                 HttpStatusCode.Created,
@@ -97,13 +94,13 @@ fun Route.userRoutes() {
                 }.singleOrNull()
             } ?: return@post call.respond(HttpStatusCode.NotFound, ErrorResponse("Invalid credentials"))
 
-            val token = transaction {
-                RefreshTokens.selectAll().where { RefreshTokens.userId eq user[Users.id] }.singleOrNull()
-            } ?: return@post call.respond(HttpStatusCode.NotFound, ErrorResponse("Internal error"))
+            val userId = user[Users.id]
+
+            val refreshToken = UserHelpers.getOrCreateRefreshToken(userId)
 
             call.respond(
                 LoginUserResponse(
-                    token = token[RefreshTokens.id]
+                    token = refreshToken
                 )
             )
         }

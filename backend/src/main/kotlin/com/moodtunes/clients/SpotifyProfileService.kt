@@ -79,4 +79,16 @@ object SpotifyProfileService {
 
     @Serializable data class SeveralArtistsResponse(val artists: List<ArtistFull>)
     @Serializable data class ArtistFull(val id: String, val genres: List<String>)
+
+    @Serializable
+    data class SpotifyUserProfile(
+        val email: String? = null,
+        @SerialName("display_name") val displayName: String? = null
+    )
+
+    suspend fun getSpotifyUserProfile(accessToken: String): SpotifyUserProfile {
+        return http.get("https://api.spotify.com/v1/me") {
+            header(HttpHeaders.Authorization, "Bearer $accessToken")
+        }.body()
+    }
 }

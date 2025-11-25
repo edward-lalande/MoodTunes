@@ -1,8 +1,10 @@
 package com.moodtunes.routes
 
 import com.moodtunes.clients.SpotifyOAuthService
+import com.moodtunes.clients.SpotifyProfileService
 import com.moodtunes.database.SpotifyTokens
 import com.moodtunes.models.*
+import com.moodtunes.utils.UserHelpers
 import io.ktor.server.application.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
@@ -19,109 +21,91 @@ fun Route.spotifyOAuthRoutes() {
 
     route("/spotify") {
 
-        authenticate("auth-bearer") {
-            get("/login", {
-                tags = listOf("Spotify")
-                securitySchemeName = "bearerAuth"
-                summary = "Start Spotify OAuth (PKCE)"
-                description =
-                    "Generates an authorization URL that the client app must open to start the Spotify OAuth flow."
-                response {
-                    HttpStatusCode.OK to {
-                        description = "Authorization URL generated successfully"
-                        body<SpotifyAuthUrlResponse>()
-                    }
-                    HttpStatusCode.Unauthorized to {
-                        description = "Missing or invalid token"
-                        body<ErrorResponse>()
-                    }
+        get("/login", {
+            tags = listOf("Spotify")
+            summary = "Start Spotify OAuth (PKCE)"
+            description =
+                "Generates an authorization URL that the client app must open to start the Spotify OAuth flow."
+            response {
+                HttpStatusCode.OK to {
+                    description = "Authorization URL generated successfully"
+                    body<SpotifyAuthUrlResponse>()
                 }
-            }) {
-                val userId = call.principal<UserIdPrincipal>()!!.name.toInt()
-
-                val pkce = SpotifyOAuthService.createPkceBundle()
-                val url = SpotifyOAuthService.buildAuthorizeUrl(pkce.state, pkce.codeChallenge)
-
-                println("[PKCE-LOGIN] state = ${pkce.state}")
-                println("[PKCE-LOGIN] verifier = ${pkce.codeVerifier}")
-
-                call.respond(
-                    SpotifyAuthUrlResponse(
-                        authUrl = url,
-                        state = pkce.state
-                    )
-                )
+                HttpStatusCode.Unauthorized to {
+                    description = "Missing or invalid token"
+                    body<ErrorResponse>()
+                }
             }
+        }) {
+            val pkce = SpotifyOAuthService.createPkceBundle()
+            val url = SpotifyOAuthService.buildAuthorizeUrl(pkce.state, pkce.codeChallenge)
+
+            println("[PKCE-LOGIN] state = ${pkce.state}")
+            println("[PKCE-LOGIN] verifier = ${pkce.codeVerifier}")
+
+            call.respond(
+                SpotifyAuthUrlResponse(
+                    authUrl = url,
+                    state = pkce.state
+                )
+            )
         }
 
-        authenticate("auth-bearer") {
-            get("/callback", {
-                tags = listOf("Spotify")
-                securitySchemeName = "bearerAuth"
-                summary = "Spotify OAuth callback"
-                description =
-                    "Receives the 'code' and 'state' parameters from Spotify and exchanges them for access+refresh tokens. Automatically stores them for the authenticated user."
-                request {
-                    queryParameter<String>("code") {
-                        description = "Authorization code returned by Spotify"
-                        required = true
-                    }
-                    queryParameter<String>("state") {
-                        description = "State returned by Spotify"
-                        required = true
-                    }
+        get("/callback", {
+            tags = listOf("Spotify")
+            summary = "Spotify OAuth callback"
+            description =
+                "Receives the 'code' and 'state' parameters from Spotify and exchanges them for access+refresh tokens. Automatically stores them for the authenticated user."
+            request {
+                queryParameter<String>("code") {
+                    description = "Authorization code returned by Spotify"
+                    required = true
                 }
-                response {
-                    HttpStatusCode.OK to {
-                        description = "Spotify account successfully linked"
-                        body<SpotifyConnectedResponse>()
-                    }
-                    HttpStatusCode.BadRequest to {
-                        description = "Invalid or missing parameters"
-                        body<ErrorResponse>()
-                    }
-                    HttpStatusCode.Unauthorized to {
-                        description = "Missing or invalid token"
-                        body<ErrorResponse>()
-                    }
+                queryParameter<String>("state") {
+                    description = "State returned by Spotify"
+                    required = true
                 }
-            }) {
-                val userId = call.principal<UserIdPrincipal>()!!.name.toInt()
-
-                val code = call.parameters["code"]
-                    ?: return@get call.respond(HttpStatusCode.BadRequest, ErrorResponse("Missing code"))
-                val state = call.parameters["state"]
-                    ?: return@get call.respond(HttpStatusCode.BadRequest, ErrorResponse("Missing state"))
-
-
-                val token = SpotifyOAuthService.exchangeCode(code, state)
-
-                transaction {
-                    val existing = SpotifyTokens
-                        .select { SpotifyTokens.userId eq userId }
-                        .singleOrNull()
-
-                    if (existing == null) {
-                        SpotifyTokens.insert {
-                            it[SpotifyTokens.userId] = userId
-                            it[accessToken] = token.accessToken
-                            it[refreshToken] = token.refreshToken
-                            it[expiresAt] = token.expiresAt
-                        }
-                    } else {
-                        SpotifyTokens.update({ SpotifyTokens.userId eq userId }) {
-                            it[accessToken] = token.accessToken
-                            it[refreshToken] = token.refreshToken
-                            it[expiresAt] = token.expiresAt
-                        }
-                    }
-                }
-
-                println("[PKCE-CALLBACK] state received = $state")
-                println("[PKCE-CALLBACK] verifier found = ${SpotifyOAuthService.getVerifierForState(state)}")
-
-                call.respond(SpotifyConnectedResponse())
             }
+            response {
+                HttpStatusCode.OK to {
+                    description = "Spotify account successfully linked"
+                    body<LoginUserResponse>()
+                }
+                HttpStatusCode.BadRequest to {
+                    description = "Invalid or missing parameters"
+                    body<ErrorResponse>()
+                }
+                HttpStatusCode.Unauthorized to {
+                    description = "Missing or invalid token"
+                    body<ErrorResponse>()
+                }
+            }
+        }) {
+            val code = call.parameters["code"] ?: return@get call.respond(HttpStatusCode.BadRequest, ErrorResponse("Missing code"))
+            val state = call.parameters["state"] ?: return@get call.respond(HttpStatusCode.BadRequest, ErrorResponse("Missing state"))
+
+            val tokenSpotify = SpotifyOAuthService.exchangeCode(code, state)
+            val profile = SpotifyProfileService.getSpotifyUserProfile(tokenSpotify.accessToken)
+
+            val email = profile.email ?: return@get call.respond(
+                HttpStatusCode.BadRequest,
+                ErrorResponse("Spotify account has no email.")
+            )
+            val usernameFallback = profile.displayName ?: email.substringBefore("@")
+            val userId = UserHelpers.getOrCreateUserByEmail(email, usernameFallback)
+            val refreshToken = UserHelpers.getOrCreateRefreshToken(userId)
+
+            UserHelpers.saveSpotifyTokens(
+                userId = userId,
+                accessToken = tokenSpotify.accessToken,
+                refreshToken = tokenSpotify.refreshToken,
+                expiresAt = tokenSpotify.expiresAt
+            )
+
+            println("[PKCE-CALLBACK] state received = $state")
+            println("[PKCE-CALLBACK] verifier found = ${SpotifyOAuthService.getVerifierForState(state)}")
+
+            call.respond(LoginUserResponse(token = refreshToken))
         }
 
         authenticate("auth-bearer") {

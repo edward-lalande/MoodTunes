@@ -14,7 +14,7 @@ object Users : Table() {
 
 object RefreshTokens : Table() {
     val id = varchar("id", 100).uniqueIndex() // token lui-même
-    val userId = integer("user_id") references Users.id
+    val userId = integer("user_id").uniqueIndex() references Users.id
     val expiresAt = long("expires_at")
 
     override val primaryKey = PrimaryKey(id)
