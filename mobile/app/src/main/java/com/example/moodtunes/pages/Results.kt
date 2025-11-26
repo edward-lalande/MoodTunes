@@ -3,8 +3,6 @@ package com.example.moodtunes.pages
 import MOOD_ICONS
 import MOOD_NAME_TO_MOOD_OBJ
 import android.content.Intent
-import android.graphics.Bitmap
-import android.graphics.BitmapFactory
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -44,7 +42,6 @@ import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
@@ -53,22 +50,36 @@ import androidx.core.net.toUri
 import api
 import coil.compose.AsyncImage
 import com.example.moodtunes.DataObject.MusicDetailed
-import com.example.moodtunes.DataObject.OldMoodRequest
-import kotlinx.coroutines.delay
-import java.net.URL
+import com.example.moodtunes.DataObject.MusicPlaylistResponse
+import com.example.moodtunes.DataObject.NormalMoodRequest
+import com.example.moodtunes.storage.JWTHandler
+import com.google.gson.Gson
 
 @Composable
 fun Result(navController: NavHostController, selectedOption: String, moodName: String) {
     val context = LocalContext.current
+    var apiResp by remember { mutableStateOf<MusicPlaylistResponse?>(null) }
     var resp by remember { mutableStateOf<MusicDetailed?>(null) }
     var isLoading by remember { mutableStateOf(true) }
 
     LaunchedEffect(Unit) {
-        resp = api.post<MusicDetailed?>("http://192.168.200.176:8080/music/mood", OldMoodRequest(moodName))
-        if (resp != null) {
-            isLoading = false
+        try {
+            val token = JWTHandler().getToken(context)
+            println("token: $token")
+            apiResp = api.request<MusicPlaylistResponse?>(
+                method = "POST",
+                url = "http://10.0.2.2:8080/music/mood",
+                jsonBody = Gson().toJson(NormalMoodRequest(mood = moodName, kind = selectedOption)),
+                token
+            )
+            println("apiResp: ${apiResp.toString()}")
+            if (apiResp != null) {
+                isLoading = false
+            }
+            resp = apiResp?.playlist[0]
+        } catch(e: Error) {
+            println("Error: ${e.message}")
         }
-        println("${resp?.albumCoverUrl}")
     }
 
     Scaffold(
@@ -82,7 +93,7 @@ fun Result(navController: NavHostController, selectedOption: String, moodName: S
         },
         content = { innerPadding ->
             Background {
-                if (isLoading && resp != null) {
+                if (isLoading && resp == null) {
                     Column(
                         modifier = Modifier
                             .fillMaxSize()
@@ -144,7 +155,7 @@ fun Result(navController: NavHostController, selectedOption: String, moodName: S
                             modifier = Modifier.fillMaxWidth()
                         )
                         AsyncImage(
-                            model = resp?.albumCoverUrl, // pour test, changer avec https://i.insider.com/602ee9ced3ad27001837f2ac?width=1000&format=jpeg&auto=webp
+                            model = resp?.albumCoverUrl,
                             contentDescription = "Cover of the album",
                             contentScale = ContentScale.Crop,
                             modifier = Modifier
@@ -173,7 +184,7 @@ fun Result(navController: NavHostController, selectedOption: String, moodName: S
                             modifier = Modifier.fillMaxWidth()
                         )
                         Text(
-                            text = "Released: A AJOUTER",
+                            text = "Released: ${resp?.releaseDate}",
                             fontSize = 15.sp,
                             color = Color.White.copy(alpha = 0.6f),
                             textAlign = TextAlign.Center,

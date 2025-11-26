@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -28,16 +29,17 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.graphics.toColorInt
+import coil.compose.AsyncImage
 import com.example.moodtunes.R
 
 
@@ -161,10 +163,10 @@ private fun getMoodDescription(mood: Mood): String {
 
 @Composable
 fun MoodCardWithSong(
-    mood: Mood,
+    mood: Mood?,
     songTitle: String,
     songArtist: String,
-    songImageUrl: String,
+    albumCoverUrl: String,
     onDelete: () -> Unit,
     modifier: Modifier = Modifier,
     onClick: () -> Unit = {}
@@ -206,7 +208,7 @@ fun MoodCardWithSong(
                 Spacer(modifier = Modifier.width(12.dp))
 
                 Text(
-                    text = mood.name,
+                    text = mood?.name ?: "",
                     fontSize = 18.sp,
                     fontWeight = FontWeight.Bold,
                     color = Color.White,
@@ -227,16 +229,13 @@ fun MoodCardWithSong(
             Row(
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Image(
-                    painter = painterResource(id=  R.drawable.month),
-                    contentDescription = "Song image",
+                AsyncImage(
+                    model = albumCoverUrl,
+                    contentDescription = "Cover of the album",
+                    contentScale = ContentScale.Crop,
                     modifier = Modifier
-                        .size(60.dp)
-                        .background(
-                            Color.Gray,
-                            shape = RoundedCornerShape(8.dp)
-                        ),
-                    contentScale = ContentScale.Crop
+                        .width(64.dp)
+                        .height(64.dp)
                 )
 
                 Spacer(modifier = Modifier.width(12.dp))

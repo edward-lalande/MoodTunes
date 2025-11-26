@@ -1,6 +1,4 @@
-import android.content.Context
-import androidx.compose.ui.platform.LocalContext
-import com.example.moodtunes.storage.JWTHandler
+import com.example.moodtunes.DataObject.NormalMoodRequest
 import com.google.gson.Gson
 import okhttp3.*
 import kotlinx.coroutines.Dispatchers
@@ -20,6 +18,9 @@ object HttpClient {
     suspend inline fun <reified T> post(url: String, body: Any? = null): T? =
         request("POST", url, gson.toJson(body))
 
+    suspend inline fun <reified T> postProtected(url: String, token: String, body: Any? = null): T? =
+        request("POST", url = url, token = token, jsonBody = gson.toJson(body))
+
     suspend inline fun <reified T> patchProtected(url: String, token: String, body: Any? = null): T? =
         request("PATCH", url = url, token = token, jsonBody = gson.toJson(body))
 
@@ -29,9 +30,10 @@ object HttpClient {
     suspend inline fun <reified T> request(method: String, url: String, jsonBody: String? = null, token: String? = null): T? {
         return withContext(Dispatchers.IO) {
             val body = jsonBody?.let {
-                RequestBody.create("application/json; charset=utf-8".toMediaType(), it)
+                RequestBody.create("application/json; charset=utf-8".toMediaType(), jsonBody)
             }
-
+            println("[MoodTunes] url: ${url}");
+            println("[MoodTunes] body: ${body.toString()}")
             val requestBuild = Request.Builder()
                 .url(url)
                 .method(method, body)
@@ -42,10 +44,19 @@ object HttpClient {
 
             val request = requestBuild.build()
 
-            val response = client.newCall(request).execute()
-            val responseBody = response.body?.string() ?: return@withContext null
+            try {
+                val response = client.newCall(request).execute()
+                val responseBody = response.body?.string()
 
-            gson.fromJson(responseBody, T::class.java)
+                if (!response.isSuccessful || responseBody == null) {
+                    return@withContext null
+                }
+
+                gson.fromJson(responseBody, T::class.java)
+            } catch (e: Exception) {
+                e.printStackTrace()
+                null
+            }
         }
     }
 }
@@ -69,8 +80,9 @@ class Call(val baseUrl: String) {
     suspend inline fun <reified T> request(
         method: String,
         url: String,
-        jsonBody: String? = null
-    ) =  HttpClient.request<T>(method, url, jsonBody)
+        jsonBody: String? = null,
+        token: String? = null
+    ) =  HttpClient.request<T>(method, url, jsonBody, token)
 }
 
-val api = Call("http://10.0.2.2:8080/")
+val api = Call("http://10.0.2.2:8080")
