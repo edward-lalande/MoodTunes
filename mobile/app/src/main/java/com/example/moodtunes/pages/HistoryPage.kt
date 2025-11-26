@@ -68,11 +68,9 @@ fun HistoryPage(navController: NavController) {
 
     LaunchedEffect(Unit) {
         try {
-            val response = api.request<MusicHistoryList?>(
-                method = "GET",
-                url = "http://10.0.2.2:8080/music/history",
-                jsonBody = null,
-                token = token
+            val response = api.getProtected<MusicHistoryList?>(
+                path = "/music/history",
+                token = token.toString()
             )
             if (response != null) {
                 history = response.history
@@ -247,10 +245,8 @@ fun HistoryPage(navController: NavController) {
                                                 coroutineScope.launch {
                                                     isLoading = true
 
-                                                    api.request<DeleteMusicHistoryResp?>(
-                                                        method = "DELETE",
-                                                        url = "http://10.0.2.2:8080/music/history",
-                                                        jsonBody = Gson().toJson(DeleteMusicHistoryReq(item.id)),
+                                                    api.deleteProtected<DeleteMusicHistoryResp?>(
+                                                        path = "/music/history",
                                                         token = token.toString(),
                                                     )
 
