@@ -50,6 +50,9 @@ import com.example.moodtunes.components.MoodTunesButtonField
 import com.example.moodtunes.components.Background
 import com.example.moodtunes.storage.JWTHandler
 import kotlinx.coroutines.launch
+import android.content.Intent
+import com.example.moodtunes.DataObject.SpotifyAuthResponse
+import androidx.core.net.toUri
 
 @Composable
 fun LoginPage(navController: NavController) {
@@ -57,7 +60,7 @@ fun LoginPage(navController: NavController) {
 
     LaunchedEffect(Unit) {
         try {
-            user = api.get<UserData>("login")
+            user = api.get<UserData>("/login")
         } catch (e: Exception){
             user = null
             println(e.toString())
@@ -73,7 +76,7 @@ fun LoginPage(navController: NavController) {
         ) {
             LoginSignUpHeader("Music that matches your mood")
 
-            SpotifyButton()
+            SpotifyButton(32)
 
             Row(
                 verticalAlignment = Alignment.CenterVertically,
@@ -152,16 +155,39 @@ fun LoginSignUpHeader(subtitleText: String) {
 }
 
 @Composable
-fun SpotifyButton() {
+fun SpotifyButton(padding: Int) {
+    val context = LocalContext.current
+    val scope = rememberCoroutineScope()
+
     Button(
-        onClick = {},
+        onClick = {
+            scope.launch {
+                try {
+                    val response = api.get<SpotifyAuthResponse>("/spotify/login")
+
+                    if (response?.authUrl != null) {
+                        val intent = Intent(Intent.ACTION_VIEW, response.authUrl.toUri())
+
+                        context.startActivity(intent)
+                    } else {
+                        Toast.makeText(
+                            context,
+                            "Failed to start Spotify authentication",
+                            Toast.LENGTH_LONG
+                        ).show()
+                    }
+                } catch (e: Exception) {
+                    println("Sign In failed: $e")
+                }
+            }
+        },
         colors = ButtonDefaults.buttonColors(
             containerColor = Color(0xFF1DB954),
             contentColor = Color.White
         ),
         shape = MaterialTheme.shapes.medium,
         modifier = Modifier
-            .padding(32.dp)
+            .padding(padding.dp)
             .fillMaxWidth()
             .height(56.dp)
     ) {
