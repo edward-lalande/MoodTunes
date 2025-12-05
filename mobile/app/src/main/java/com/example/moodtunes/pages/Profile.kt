@@ -1,6 +1,5 @@
 package com.example.moodtunes.pages
 
-import Call
 import android.widget.Toast
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -41,6 +40,7 @@ import com.example.moodtunes.components.MoodTunesButtonField
 import com.example.moodtunes.storage.JWTHandler
 import kotlinx.coroutines.launch
 import api
+import com.example.moodtunes.DataObject.SpotifyStatusResponse
 
 @Composable
 fun ProfilePage(navController: NavController) {
@@ -55,6 +55,7 @@ fun ProfilePage(navController: NavController) {
             var email by remember { mutableStateOf("email") }
             var password by remember { mutableStateOf("") }
             var confirmPassword by remember { mutableStateOf("") }
+            var spotifyStatus by remember { mutableStateOf(false) }
 
             val handler = JWTHandler()
             val token = handler.getToken(context)
@@ -65,7 +66,9 @@ fun ProfilePage(navController: NavController) {
                         val response = api.getProtected<GetUserResponse>("/user", token)
                         actualUsername = response?.username ?: "default"
                         email = response?.email ?: "default"
-                        println("User data: $response")
+
+                        val spotifyResponse = api.getProtected<SpotifyStatusResponse>("/spotify/status", token)
+                        spotifyStatus = spotifyResponse?.connected ?: false
                     } else {
                         println("No token found")
                     }
@@ -80,6 +83,10 @@ fun ProfilePage(navController: NavController) {
                     horizontalAlignment = Alignment.CenterHorizontally,
                     verticalArrangement = Arrangement.Center
                 ) {
+                    if (!spotifyStatus) {
+                        SpotifyConnectSection()
+                    }
+
                     MoodTunesTextField(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -224,3 +231,23 @@ fun ProfilePage(navController: NavController) {
         }
     )
 }
+
+@Composable
+fun SpotifyConnectSection() {
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 24.dp, vertical = 16.dp)
+    ) {
+        Text(
+            text = "Improve your music recommendations",
+            color = Color.White,
+            fontSize = 20.sp,
+            fontWeight = FontWeight.Bold
+        )
+
+        SpotifyButton(16)
+    }
+}
+

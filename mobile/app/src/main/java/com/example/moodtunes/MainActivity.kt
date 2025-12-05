@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
@@ -20,6 +21,9 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
+
+        val navigateTo = intent.getStringExtra("navigate_to")
+
         setContent {
             MoodTunesTheme {
                 Scaffold(
@@ -28,7 +32,8 @@ class MainActivity : ComponentActivity() {
                 ) { innerPadding ->
                     Background {
                         MoodTunesApp(
-                            modifier = Modifier.padding(innerPadding)
+                            modifier = Modifier.padding(innerPadding),
+                            startDestination = navigateTo
                         )
                     }
                 }
@@ -38,8 +43,17 @@ class MainActivity : ComponentActivity() {
 }
 
 @Composable
-fun MoodTunesApp(modifier: Modifier = Modifier) {
+fun MoodTunesApp(modifier: Modifier = Modifier, startDestination: String? = null) {
     val navController = rememberNavController()
+
+    LaunchedEffect(startDestination) {
+        if (startDestination != null) {
+            navController.navigate(startDestination) {
+                popUpTo(0) { inclusive = true }
+            }
+        }
+    }
+
     MoodNavGraph(navController)
 }
 

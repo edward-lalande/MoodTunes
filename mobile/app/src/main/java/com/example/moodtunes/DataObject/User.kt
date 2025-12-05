@@ -1,7 +1,5 @@
 package com.example.moodtunes.DataObject
 
-import android.R
-
 data class UserData(
     val username: String,
     val password: String
