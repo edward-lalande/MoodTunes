@@ -56,6 +56,7 @@ fun ProfilePage(navController: NavController) {
             var password by remember { mutableStateOf("") }
             var confirmPassword by remember { mutableStateOf("") }
             var spotifyStatus by remember { mutableStateOf(false) }
+            var showDeleteDialog by remember { mutableStateOf(false) }
 
             val handler = JWTHandler()
             val token = handler.getToken(context)
@@ -207,25 +208,36 @@ fun ProfilePage(navController: NavController) {
                             color = Color.White,
                             fontSize = 16.sp,
                             modifier = Modifier
-                                .clickable {
-                                    scope.launch {
-                                        try {
-                                            val response = api.deleteProtected<ErrorResponse>("/user/logout", token?:"")
-
-                                            if (response?.error.isNullOrBlank()) {
-                                                Toast.makeText(context, "Account deleted", Toast.LENGTH_LONG).show()
-                                                navController.navigate("sign-up")
-                                            } else {
-                                                Toast.makeText(context, "Failed to delete account", Toast.LENGTH_LONG).show()
-                                            }
-                                        } catch (e: Exception) {
-                                            println("Profile deletion failed: $e")
-                                        }
-                                    }
-                                }
+                                .clickable { showDeleteDialog = true }
                                 .padding(horizontal = 8.dp)
                         )
                     }
+                    if (showDeleteDialog) {
+                        DeleteAccountDialog(
+                            onConfirm = {
+                                showDeleteDialog = false
+                                scope.launch {
+                                    try {
+                                        val response = api.deleteProtected<ErrorResponse>("/user", token ?: "")
+
+                                        if (response?.error.isNullOrBlank()) {
+                                            handler.clearToken(context)
+                                            Toast.makeText(context, "Account deleted", Toast.LENGTH_LONG).show()
+                                            navController.navigate("sign-up")
+                                        } else {
+                                            Toast.makeText(context, "Failed to delete account", Toast.LENGTH_LONG).show()
+                                        }
+                                    } catch (e: Exception) {
+                                        println("Profile deletion failed: $e")
+                                    }
+                                }
+                            },
+                            onCancel = {
+                                showDeleteDialog = false
+                            }
+                        )
+                    }
+
                 }
             }
         }
@@ -250,4 +262,47 @@ fun SpotifyConnectSection() {
         SpotifyButton(16)
     }
 }
+
+@Composable
+fun DeleteAccountDialog(
+    onConfirm: () -> Unit,
+    onCancel: () -> Unit
+) {
+    androidx.compose.material3.AlertDialog(
+        onDismissRequest = onCancel,
+        title = {
+            Text(
+                text = "Delete Account?",
+                fontWeight = FontWeight.Bold,
+                fontSize = 20.sp
+            )
+        },
+        text = {
+            Text(
+                text = "Are you sure you want to permanently delete your account? This action cannot be undone.",
+                fontSize = 16.sp
+            )
+        },
+        confirmButton = {
+            Text(
+                text = "Delete",
+                color = Color(0xFFB62121),
+                fontWeight = FontWeight.Bold,
+                modifier = Modifier
+                    .padding(8.dp)
+                    .clickable { onConfirm() }
+            )
+        },
+        dismissButton = {
+            Text(
+                text = "Cancel",
+                color = Color.Gray,
+                modifier = Modifier
+                    .padding(8.dp)
+                    .clickable { onCancel() }
+            )
+        }
+    )
+}
+
 
