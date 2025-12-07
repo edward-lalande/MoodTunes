@@ -1,7 +1,10 @@
 package com.example.moodtunes.pages
 
+import android.widget.Toast
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -10,33 +13,70 @@ import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import com.example.moodtunes.DataObject.ErrorResponse
+import com.example.moodtunes.DataObject.GetUserResponse
+import com.example.moodtunes.DataObject.SignupRequest
+import com.example.moodtunes.DataObject.TokenResponse
 import com.example.moodtunes.components.MoodTunesTextField
 import com.example.moodtunes.components.Background
 import com.example.moodtunes.components.BottomBar
 import com.example.moodtunes.components.PageSelected
 import com.example.moodtunes.components.MoodTunesButtonField
+import com.example.moodtunes.storage.JWTHandler
+import kotlinx.coroutines.launch
+import api
+import com.example.moodtunes.DataObject.SpotifyStatusResponse
 
 @Composable
 fun ProfilePage(navController: NavController) {
     Scaffold (
         bottomBar = { BottomBar(navController, PageSelected.Profile) },
         content = { innerPadding ->
-            var actualUsername by remember { mutableStateOf("actualUsername") }
+            val context = LocalContext.current
+
+            val scope = rememberCoroutineScope()
+
+            var actualUsername by remember { mutableStateOf("") }
             var email by remember { mutableStateOf("email") }
-            var password by remember { mutableStateOf("password") }
-            var confirmPassword by remember { mutableStateOf("confirmPassword") }
+            var password by remember { mutableStateOf("") }
+            var confirmPassword by remember { mutableStateOf("") }
+            var spotifyStatus by remember { mutableStateOf(false) }
+            var showDeleteDialog by remember { mutableStateOf(false) }
+
+            val handler = JWTHandler()
+            val token = handler.getToken(context)
+
+            LaunchedEffect(token) {
+                try {
+                    if (token != null) {
+                        val response = api.getProtected<GetUserResponse>("/user", token)
+                        actualUsername = response?.username ?: "default"
+                        email = response?.email ?: "default"
+
+                        val spotifyResponse = api.getProtected<SpotifyStatusResponse>("/spotify/status", token)
+                        spotifyStatus = spotifyResponse?.connected ?: false
+                    } else {
+                        println("No token found")
+                    }
+                } catch (e: Exception) {
+                    println("Error: ${e.message}")
+                }
+            }
 
             Background {
                 Column(
@@ -44,6 +84,10 @@ fun ProfilePage(navController: NavController) {
                     horizontalAlignment = Alignment.CenterHorizontally,
                     verticalArrangement = Arrangement.Center
                 ) {
+                    if (!spotifyStatus) {
+                        SpotifyConnectSection()
+                    }
+
                     MoodTunesTextField(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -80,7 +124,26 @@ fun ProfilePage(navController: NavController) {
                     )
                     MoodTunesButtonField(
                         onClick = {
-                            navController.navigate("select-mood")
+                            scope.launch {
+                                try {
+                                    val request = SignupRequest(
+                                        email = email,
+                                        username = actualUsername,
+                                        password = password
+                                    )
+
+                                    val response = api.patchProtected<ErrorResponse>("/user", token?:"", request)
+
+                                    if (response?.error.isNullOrBlank()) {
+                                        Toast.makeText(context, "Account information updated", Toast.LENGTH_LONG).show()
+                                        navController.navigate("select-mood")
+                                    } else {
+                                        Toast.makeText(context, "Failed to update account's information", Toast.LENGTH_LONG).show()
+                                    }
+                                } catch (e: Exception) {
+                                    println("Profile info update failed: $e")
+                                }
+                            }
                         },
                         modifier = Modifier
                             .fillMaxWidth()
@@ -99,7 +162,21 @@ fun ProfilePage(navController: NavController) {
                     )
                     MoodTunesButtonField(
                         onClick = {
-                            navController.navigate("login")
+                            scope.launch {
+                                val request = TokenResponse(
+                                    token = token?:""
+                                )
+
+                                val response = api.post<ErrorResponse>("/user/logout", request)
+
+                                if (response?.error.isNullOrBlank()) {
+                                    handler.clearToken(context)
+                                    navController.navigate("login")
+                                } else {
+                                    Toast.makeText(context, "Logout failed", Toast.LENGTH_LONG).show()
+                                    println("Logout failed")
+                                }
+                            }
                         },
                         modifier = Modifier
                             .fillMaxWidth()
@@ -117,8 +194,115 @@ fun ProfilePage(navController: NavController) {
                         }
                     )
 
+                    Row (
+                        modifier = Modifier.padding(top = 120.dp, start = 16.dp, end = 16.dp)
+                    ) {
+                        Text(
+                            text = "Already want to leave us ?",
+                            color = Color.Gray,
+                            fontSize = 16.sp
+                        )
+
+                        Text(
+                            text = "Delete my account",
+                            color = Color.White,
+                            fontSize = 16.sp,
+                            modifier = Modifier
+                                .clickable { showDeleteDialog = true }
+                                .padding(horizontal = 8.dp)
+                        )
+                    }
+                    if (showDeleteDialog) {
+                        DeleteAccountDialog(
+                            onConfirm = {
+                                showDeleteDialog = false
+                                scope.launch {
+                                    try {
+                                        val response = api.deleteProtected<ErrorResponse>("/user", token ?: "")
+
+                                        if (response?.error.isNullOrBlank()) {
+                                            handler.clearToken(context)
+                                            Toast.makeText(context, "Account deleted", Toast.LENGTH_LONG).show()
+                                            navController.navigate("sign-up")
+                                        } else {
+                                            Toast.makeText(context, "Failed to delete account", Toast.LENGTH_LONG).show()
+                                        }
+                                    } catch (e: Exception) {
+                                        println("Profile deletion failed: $e")
+                                    }
+                                }
+                            },
+                            onCancel = {
+                                showDeleteDialog = false
+                            }
+                        )
+                    }
+
                 }
             }
         }
     )
 }
+
+@Composable
+fun SpotifyConnectSection() {
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 24.dp, vertical = 16.dp)
+    ) {
+        Text(
+            text = "Improve your music recommendations",
+            color = Color.White,
+            fontSize = 20.sp,
+            fontWeight = FontWeight.Bold
+        )
+
+        SpotifyButton(16)
+    }
+}
+
+@Composable
+fun DeleteAccountDialog(
+    onConfirm: () -> Unit,
+    onCancel: () -> Unit
+) {
+    androidx.compose.material3.AlertDialog(
+        onDismissRequest = onCancel,
+        title = {
+            Text(
+                text = "Delete Account?",
+                fontWeight = FontWeight.Bold,
+                fontSize = 20.sp
+            )
+        },
+        text = {
+            Text(
+                text = "Are you sure you want to permanently delete your account? This action cannot be undone.",
+                fontSize = 16.sp
+            )
+        },
+        confirmButton = {
+            Text(
+                text = "Delete",
+                color = Color(0xFFB62121),
+                fontWeight = FontWeight.Bold,
+                modifier = Modifier
+                    .padding(8.dp)
+                    .clickable { onConfirm() }
+            )
+        },
+        dismissButton = {
+            Text(
+                text = "Cancel",
+                color = Color.Gray,
+                modifier = Modifier
+                    .padding(8.dp)
+                    .clickable { onCancel() }
+            )
+        }
+    )
+}
+
+
