@@ -37,10 +37,10 @@ import androidx.compose.ui.unit.sp
 import androidx.core.net.toUri
 import androidx.navigation.NavController
 import api
-import com.example.moodtunes.DataObject.DeleteMusicHistoryReq
 import com.example.moodtunes.DataObject.DeleteMusicHistoryResp
 import com.example.moodtunes.DataObject.MusicHistory
 import com.example.moodtunes.DataObject.MusicHistoryList
+import com.example.moodtunes.DataObject.DeleteHistoryRequest
 import com.example.moodtunes.components.Background
 import com.example.moodtunes.components.BottomBar
 import com.example.moodtunes.components.MoodCardWithSong
@@ -49,7 +49,6 @@ import com.example.moodtunes.components.PageSelected
 import com.example.moodtunes.components.SearchBar
 import com.example.moodtunes.components.TopBar
 import com.example.moodtunes.storage.JWTHandler
-import com.google.gson.Gson
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.Calendar
@@ -244,10 +243,14 @@ fun HistoryPage(navController: NavController) {
                                             onDelete = {
                                                 coroutineScope.launch {
                                                     isLoading = true
+                                                    val request = DeleteHistoryRequest(
+                                                        id = item.id
+                                                    )
 
-                                                    api.deleteProtected<DeleteMusicHistoryResp?>(
-                                                        path = "/music/history",
+                                                    api.deleteBodyProtected<DeleteMusicHistoryResp?>(
+                                                        url = "/music/history",
                                                         token = token.toString(),
+                                                        body = request
                                                     )
 
                                                     val response = api.getProtected<MusicHistoryList?>(

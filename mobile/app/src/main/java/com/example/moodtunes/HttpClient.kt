@@ -27,6 +27,9 @@ object HttpClient {
     suspend inline fun <reified T> deleteProtected(url: String, token: String): T? =
         request("DELETE", url = url, token = token)
 
+    suspend inline fun <reified T> deleteBodyProtected(url: String, token: String, body: Any? = null): T? =
+        request("DELETE", url = url, token = token, jsonBody = gson.toJson(body))
+
     suspend inline fun <reified T> request(method: String, url: String, jsonBody: String? = null, token: String? = null): T? {
         return withContext(Dispatchers.IO) {
             val body = jsonBody?.let {
@@ -76,6 +79,10 @@ class Call(val baseUrl: String) {
 
     suspend inline fun <reified T> deleteProtected(path: String, token: String) =
         HttpClient.deleteProtected<T>(baseUrl + path, token)
+
+    suspend inline fun <reified T> deleteBodyProtected(url: String, token: String, body: Any? = null) =
+        HttpClient.deleteBodyProtected<T>(if (url.startsWith("http://") || url.startsWith("https://")) url else baseUrl + url, token = token, body)
+
 
     suspend inline fun <reified T> request(
         method: String,
