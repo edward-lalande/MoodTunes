@@ -21,11 +21,11 @@ data class NormalMoodRequest(
 
 data class DeleteMusicHistoryResp(
     val id: String,
-     val status: String
+    val status: String
 )
 
-data class DeleteMusicHistoryReq(
-    val id: String,
+data class DeleteHistoryRequest(
+    val id: String
 )
 
 data class MusicHistory(

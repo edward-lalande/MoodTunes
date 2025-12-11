@@ -7,7 +7,7 @@ import org.jetbrains.exposed.sql.transactions.transaction
 object DatabaseFactory {
     fun init() {
         Database.connect(
-            url = "jdbc:postgresql://localhost:5432/moodtunes",
+            url = "jdbc:postgresql://moodtunes-postgres:5432/moodtunes",
             driver = "org.postgresql.Driver",
             user = "postgres",
             password = "password" // woopsie
