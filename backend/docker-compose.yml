@@ -11,6 +11,16 @@ services:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
+  backend:
+    build: ./
+    container_name: moodtunes-backend
+    restart: always
+    environment:
+      DATABASE_URL: postgres://postgres:password@postgres:5432/moodtunes
+    ports:
+      - "8080:8080"
+    depends_on:
+      - postgres
 
 volumes:
   postgres_data:

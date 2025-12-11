@@ -1,6 +1,9 @@
 plugins {
     kotlin("jvm") version "1.9.23"
     kotlin("plugin.serialization") version "1.9.23"
+    id("application")
+    id("com.github.johnrengelman.shadow") version "8.1.1"
+    java
     application
 }
 
@@ -17,6 +20,7 @@ dependencies {
     implementation("io.ktor:ktor-serialization-kotlinx-json:$ktorVersion")
     implementation("io.ktor:ktor-server-auth-jwt:$ktorVersion")
     implementation("io.ktor:ktor-server-auth:$ktorVersion")
+    implementation("io.ktor:ktor-server-netty-jvm:$ktorVersion")
     implementation("ch.qos.logback:logback-classic:1.4.14")
 
     implementation("io.github.smiley4:ktor-swagger-ui:2.6.0")
@@ -34,6 +38,12 @@ dependencies {
 
 application {
     mainClass.set("com.moodtunes.ApplicationKt")
+}
+
+tasks.withType<Jar> {
+    manifest {
+        attributes["Main-Class"] = "com.moodtunes.ApplicationKt"
+    }
 }
 
 kotlin {
